@@ -150,24 +150,45 @@ let saveTimer = null;
 function configOK(){ return SUPABASE_URL.startsWith("http") && SUPABASE_KEY.length>20; }
 
 function defaultData(){
-  return { providers: [
-    { id:'p_lunes', name:'JUEVES Lineas Jookey', items:[
-      {name:'Lucky box',ideal:8},{name:'Lucky común',ideal:4},{name:"Lucky 12's",ideal:4},
-      {name:'Lucky box mentolado XL',ideal:7},{name:'Lucky box Lisa XL',ideal:1},
-      {name:'Lucky común mentolado',ideal:7},{name:'Lucky Mentolado 12´s',ideal:8},
-      {name:'Lucky Red XL',ideal:1},{name:"Lucky Red Mix 12's doble cápsula",ideal:2},
-      {name:'Lucky Doble Plus XL',ideal:2},{name:"Lucky Doble Plus 12's",ideal:1},
-      {name:"Lucky ORIGEN 10's",ideal:2},{name:'Lucky ORIGEN Común',ideal:6},
-      {name:'Lucky ORIGEN Box',ideal:2},{name:"Lucky ORIGEN Convertible 10's",ideal:2},
-      {name:'Lucky ORIGEN Convertible Común',ideal:8},{name:'Lucky ORIGEN Convertible Box',ideal:1},
-      {name:'Lucky Dark Box',ideal:3},{name:'Lucky Silver (Pall Mall Suave)',ideal:2},
-      {name:'Lucky Low común',ideal:4},{name:'Camel común',ideal:2},{name:'Camel Box',ideal:2},
-      {name:'Camel Box Activate/Circle',ideal:2},{name:'Camel Box Blue',ideal:1},
-      {name:"Camel 10's",ideal:2},{name:'Camel Legend Box',ideal:2},
-      {name:'Rothmans 43/70 largo',ideal:6},{name:'Tabaco Luckies Original',ideal:8},
-      {name:'Tabaco Luckies Galpon',ideal:8},
-    ]}
-  ], stock:{} };
+  return { providers: [ jockeyProvider() ], stock:{} };
+}
+const JOCKEY_VARIANTS=[{key:'L',label:'Lunes'},{key:'J',label:'Jueves'}];
+function jockeyDefaultVariant(){
+  const d=new Date().getDay(); // 0=dom,1=lun,2=mar,3=mie,4=jue,5=vie,6=sab
+  return d===1?'L':'J';
+}
+function jockeyProvider(){
+  return { id:'p_lunes', name:'JOCKEY', variants:JOCKEY_VARIANTS, activeVariant:jockeyDefaultVariant(), items:[
+    {name:'Lucky box', idealByVariant:{L:6,J:5}},
+    {name:'Lucky común', idealByVariant:{L:4,J:5}},
+    {name:"Lucky 12's", idealByVariant:{L:4,J:5}},
+    {name:'Lucky box mentolado XL', idealByVariant:{L:7,J:6}},
+    {name:'Lucky box Uva XL', idealByVariant:{L:1,J:1}},
+    {name:'Lucky común mentolado', idealByVariant:{L:7,J:4}},
+    {name:"Lucky Mentolado 12's", idealByVariant:{L:6,J:7}},
+    {name:'Lucky Red XL', idealByVariant:{L:1,J:1}},
+    {name:"Lucky Red Mix 12's doble cápsula", idealByVariant:{L:1,J:0}},
+    {name:'Lucky Doble Plus XL', idealByVariant:{L:2,J:0}},
+    {name:"Lucky Doble Plus 12's", idealByVariant:{L:0,J:1}},
+    {name:"Lucky ORIGEN 10's", idealByVariant:{L:1,J:1}},
+    {name:'Lucky ORIGEN Común', idealByVariant:{L:6,J:4}},
+    {name:'Lucky ORIGEN Box', idealByVariant:{L:2,J:2}},
+    {name:"Lucky ORIGEN Convertible 10's", idealByVariant:{L:2,J:1}},
+    {name:'Lucky ORIGEN Convertible Común', idealByVariant:{L:6,J:7}},
+    {name:'Lucky ORIGEN Convertible Box', idealByVariant:{L:3,J:3}},
+    {name:'Lucky Dark Box', idealByVariant:{L:0,J:1}},
+    {name:'Lucky Silver (Pall Mall Suave)', idealByVariant:{L:3,J:2}},
+    {name:'Lucky Low común', idealByVariant:{L:4,J:5}},
+    {name:'Camel común', idealByVariant:{L:2,J:1}},
+    {name:'Camel Box', idealByVariant:{L:2,J:3}},
+    {name:'Camel Box Activate/Circle', idealByVariant:{L:1,J:1}},
+    {name:'Camel Box Blue', idealByVariant:{L:1,J:1}},
+    {name:"Camel 10's", idealByVariant:{L:2,J:1}},
+    {name:'Camel Legend Box', idealByVariant:{L:5,J:5}},
+    {name:'Rothmans 43/70 largo', idealByVariant:{L:1,J:1}},
+    {name:'Tabaco Luckies Original', idealByVariant:{L:6,J:12}},
+    {name:'Tabaco Luckies Galpón', idealByVariant:{L:0,J:0}},
+  ]};
 }
 const SEASON_VARIANTS=[{key:'W',label:'❄ Invierno'},{key:'S',label:'☀ Verano'}];
 function yafemaProvider(){
@@ -249,8 +270,13 @@ async function load(){
   else { data = defaultData(); await insertRow(); }
   if(!data.stock) data.stock={};
   let migrated=false;
-  const jookey=data.providers.find(p=>p.id==='p_lunes');
-  if(jookey && jookey.name!=='JUEVES Lineas Jookey'){ jookey.name='JUEVES Lineas Jookey'; migrated=true; }
+  let jookey=data.providers.find(p=>p.id==='p_lunes');
+  if(!jookey){ data.providers.push(jockeyProvider()); migrated=true; }
+  else if(!jookey.variants){ // reemplaza la lista vieja de un solo día por la real con Lunes/Jueves
+    const fresh=jockeyProvider();
+    jookey.name=fresh.name; jookey.variants=fresh.variants; jookey.activeVariant=fresh.activeVariant; jookey.items=fresh.items;
+    migrated=true;
+  }
   let yafema=data.providers.find(p=>p.id==='p_yafema');
   if(!yafema){ data.providers.push(yafemaProvider()); migrated=true; }
   else if(!yafema.variants){ // migrar formato viejo idealW/idealS -> idealByVariant
