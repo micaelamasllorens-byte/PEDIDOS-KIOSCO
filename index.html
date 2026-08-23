@@ -6,9 +6,10 @@
 <title>Pedidos — Kiosco</title>
 <style>
   :root{
-    --bg:#12100e;--panel:#1c1917;--panel-2:#242019;--line:#332d26;
-    --ink:#f3ede3;--muted:#9a9186;--amber:#e0a800;--amber-ink:#2a2100;
-    --green:#3fa34d;--red:#c0392b;--gray:#4a443c;--focus:#ffcf33;
+    --bg:#161211;--panel:#211a18;--panel-2:#2b211d;--line:#3a2c26;
+    --ink:#f6efe6;--muted:#a89a8c;--amber:#e2c21f;--amber-ink:#2a1f00;
+    --green:#3fa34d;--red:#a41f22;--gray:#4a443c;--focus:#ffd94d;
+    --brand:#a41f22;--brand-2:#7c1518;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
@@ -16,13 +17,14 @@
     font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
     -webkit-text-size-adjust:100%;padding-bottom:90px;}
   header{position:sticky;top:0;z-index:20;
-    background:linear-gradient(180deg,#1c1917,#171310);
-    border-bottom:1px solid var(--line);padding:14px 16px 10px;}
-  .brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-  .brand h1{font-size:20px;margin:0;letter-spacing:.5px;font-weight:800;text-transform:uppercase;}
-  .brand .tag{color:var(--muted);font-size:12px;letter-spacing:1.5px;text-transform:uppercase}
-  .sync{margin-left:auto;font-size:11px;color:var(--muted)}
-  .sync.err{color:var(--red)}
+    background:linear-gradient(180deg,var(--brand),var(--brand-2));
+    border-bottom:1px solid var(--brand-2);padding:14px 16px 10px;}
+  .brand{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .logo{flex:0 0 auto;width:34px;height:40px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+  .brand h1{font-size:20px;margin:0;letter-spacing:.5px;font-weight:800;text-transform:uppercase;color:var(--amber)}
+  .brand .tag{color:#fff;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;opacity:.9}
+  .sync{margin-left:auto;font-size:11px;color:#fff;opacity:.75}
+  .sync.err{color:#ffd7d2;opacity:1}
   .provsel{display:flex;gap:8px;overflow-x:auto;margin-top:12px;padding-bottom:4px;
     -webkit-overflow-scrolling:touch;scrollbar-width:none;}
   .provsel::-webkit-scrollbar{display:none}
@@ -99,6 +101,13 @@
 <body>
 <header>
   <div class="brand">
+    <svg class="logo" viewBox="0 0 40 48" aria-hidden="true">
+      <path d="M10 2 C6 2 4 4 4 8 L4 40 C4 44 6 46 10 46 L30 46 C34 46 36 44 36 40 L36 8 C36 4 34 2 30 2 Z"
+        fill="#e2c21f" stroke="#a3790f" stroke-width="1.5"/>
+      <rect x="4" y="9" width="32" height="4" rx="2" fill="#a3790f"/>
+      <rect x="4" y="22" width="32" height="4" rx="2" fill="#a3790f"/>
+      <rect x="4" y="35" width="32" height="4" rx="2" fill="#a3790f"/>
+    </svg>
     <h1>Pedidos</h1>
     <span class="tag">Kiosco Brandsen</span>
     <span class="sync" id="sync"></span>
