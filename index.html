@@ -15,7 +15,7 @@
   html,body{margin:0;padding:0}
   body{background:var(--bg);color:var(--ink);
     font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
-    -webkit-text-size-adjust:100%;padding-bottom:90px;}
+    -webkit-text-size-adjust:100%;padding-bottom:150px;}
   header{position:sticky;top:0;z-index:20;
     background:linear-gradient(180deg,var(--brand),var(--brand-2));
     border-bottom:1px solid var(--brand-2);padding:14px 16px 10px;}
@@ -67,9 +67,11 @@
   .btn{height:44px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;padding:0 16px;}
   .btn.primary{background:var(--amber);color:var(--amber-ink)}
   .btn.ghost{background:var(--panel-2);color:var(--ink);border:1px solid var(--line)}
+  .btn.whatsapp{background:#25d366;color:#04360f}
   .bar{position:fixed;bottom:0;left:0;right:0;z-index:30;
     background:linear-gradient(0deg,#12100e,#12100ecc);border-top:1px solid var(--line);
-    padding:12px;display:flex;gap:10px;backdrop-filter:blur(6px);}
+    padding:12px;display:flex;flex-direction:column;gap:8px;backdrop-filter:blur(6px);}
+  .barrow{display:flex;gap:10px}
   .bar .btn{flex:1}
   .editbtn{background:none;border:1px solid var(--line);color:var(--muted);
     border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer}
@@ -118,8 +120,14 @@
 <main><div id="app"><div class="loading">Cargando…</div></div></main>
 
 <div class="bar">
-  <button class="btn ghost" onclick="resetStock()">Vaciar stock</button>
-  <button class="btn primary" onclick="copyOrder()">Copiar pedido</button>
+  <div class="barrow">
+    <button class="btn ghost" onclick="resetStock()">Vaciar stock</button>
+    <button class="btn primary" onclick="copyOrder()">Copiar pedido</button>
+  </div>
+  <div class="barrow">
+    <button class="btn whatsapp" onclick="sendWhatsApp(ARI_PHONE)">💬 Enviar a Ari</button>
+    <button class="btn whatsapp" onclick="sendWhatsApp(MICA_PHONE)">💬 Enviar a Mica</button>
+  </div>
 </div>
 
 <div class="modal-bg" id="provModal">
@@ -411,12 +419,16 @@ function saveProv(){ const n=document.getElementById('provName').value.trim(); i
 function delProvider(){ if(data.providers.length<=1){alert('Tiene que quedar al menos un proveedor.');return;}
   if(!confirm('¿Eliminar el proveedor '+prov().name+' y su lista?'))return;
   delete data.stock[prov().id]; data.providers.splice(current,1); current=0; editMode=false; save(); renderAll(); }
-function copyOrder(){ const p=prov(), st=stockOf(p.id); const lines=[];
+function buildOrderText(){ const p=prov(), st=stockOf(p.id); const lines=[];
   p.items.forEach((it,idx)=>{ const v=pedirVal(effIdeal(it,p),st[idx]); if(v>0) lines.push(`${v}  ${it.name}`); });
-  const text=`PEDIDO — ${p.name}\n`+(lines.length?lines.join('\n'):'(nada para pedir)');
+  return `PEDIDO — ${p.name}\n`+(lines.length?lines.join('\n'):'(nada para pedir)'); }
+function copyOrder(){ const text=buildOrderText();
   navigator.clipboard.writeText(text).then(()=>toast('Pedido copiado'),()=>{
     const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();
     try{document.execCommand('copy');toast('Pedido copiado');}catch(e){alert(text);}ta.remove(); }); }
+const ARI_PHONE='5491167958267', MICA_PHONE='5492241491822';
+function sendWhatsApp(phone){ const text=buildOrderText();
+  window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(text), '_blank'); }
 function escapeHtml(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 let toastT; function toast(msg,bad){ const t=document.getElementById('toast');t.textContent=msg;
   t.className='toast show'+(bad?' bad':'');clearTimeout(toastT);toastT=setTimeout(()=>t.className='toast'+(bad?' bad':''),1600); }
