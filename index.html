@@ -166,12 +166,6 @@ function defaultData(){
       {name:"Camel 10's",ideal:2},{name:'Camel Legend Box',ideal:2},
       {name:'Rothmans 43/70 largo',ideal:6},{name:'Tabaco Luckies Original',ideal:8},
       {name:'Tabaco Luckies Galpon',ideal:8},
-    ]},
-    { id:'p_ejemplo1', name:'Golosinas Distri', items:[
-      {name:'Chicles Beldent surtido',ideal:6},{name:'Alfajor Jorgito x24',ideal:3},{name:'Rocklets pote',ideal:4},
-    ]},
-    { id:'p_ejemplo2', name:'Bebidas', items:[
-      {name:'Coca 500ml x12',ideal:4},{name:'Agua Villa 500ml x12',ideal:3},
     ]}
   ], stock:{}, season:'W' };
 }
@@ -205,6 +199,15 @@ async function load(){
   if(!data.stock) data.stock={};
   if(!data.season) data.season='W';
   if(!data.providers.some(p=>p.id==='p_yafema')){ data.providers.push(yafemaProvider()); save(); }
+  const exampleIds=['p_ejemplo1','p_ejemplo2'];
+  if(data.providers.some(p=>exampleIds.includes(p.id))){
+    data.providers = data.providers.filter(p=>{
+      if(exampleIds.includes(p.id)){ delete data.stock[p.id]; return false; }
+      return true;
+    });
+    save();
+  }
+  if(current>=data.providers.length) current=0;
 }
 async function insertRow(){
   const r = await fetch(`${SUPABASE_URL}/rest/v1/pedidos`,{
