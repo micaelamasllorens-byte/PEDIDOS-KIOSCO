@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pedidos — Kiosco</title>
+<style>
+  :root{
+    --bg:#12100e;--panel:#1c1917;--panel-2:#242019;--line:#332d26;
+    --ink:#f3ede3;--muted:#9a9186;--amber:#e0a800;--amber-ink:#2a2100;
+    --green:#3fa34d;--red:#c0392b;--gray:#4a443c;--focus:#ffcf33;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+    -webkit-text-size-adjust:100%;padding-bottom:90px;}
+  header{position:sticky;top:0;z-index:20;
+    background:linear-gradient(180deg,#1c1917,#171310);
+    border-bottom:1px solid var(--line);padding:14px 16px 10px;}
+  .brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .brand h1{font-size:20px;margin:0;letter-spacing:.5px;font-weight:800;text-transform:uppercase;}
+  .brand .tag{color:var(--muted);font-size:12px;letter-spacing:1.5px;text-transform:uppercase}
+  .sync{margin-left:auto;font-size:11px;color:var(--muted)}
+  .sync.err{color:var(--red)}
+  .provsel{display:flex;gap:8px;overflow-x:auto;margin-top:12px;padding-bottom:4px;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .provsel::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;background:var(--panel-2);border:1px solid var(--line);
+    color:var(--muted);padding:8px 14px;border-radius:999px;font-size:14px;
+    white-space:nowrap;cursor:pointer;font-weight:600;}
+  .chip.active{background:var(--amber);color:var(--amber-ink);border-color:var(--amber)}
+  .chip.add{color:var(--amber);border-style:dashed}
+  main{padding:14px 12px 0}
+  .summary{display:flex;gap:10px;margin-bottom:12px;}
+  .stat{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:12px;text-align:center;}
+  .stat b{display:block;font-size:26px;line-height:1}
+  .stat span{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-top:6px}
+  .stat.pedir b{color:var(--amber)}
+  table{width:100%;border-collapse:collapse}
+  thead th{position:sticky;top:0;background:var(--bg);font-size:10px;text-transform:uppercase;
+    letter-spacing:1px;color:var(--muted);text-align:center;padding:6px 4px;font-weight:700;}
+  thead th.prod{text-align:left;padding-left:10px}
+  tbody td{border-top:1px solid var(--line);padding:6px 4px;vertical-align:middle}
+  .prodname{font-size:14px;padding-left:10px;line-height:1.2;}
+  .colnum{width:74px}.cellcenter{text-align:center}
+  .ideal{color:var(--muted);font-size:15px;text-align:center;font-variant-numeric:tabular-nums}
+  input.stock{width:56px;height:40px;text-align:center;font-size:17px;
+    background:var(--panel-2);border:1px solid var(--line);border-radius:9px;
+    color:var(--ink);font-variant-numeric:tabular-nums;}
+  input.stock:focus{outline:none;border-color:var(--focus);background:#2b2519}
+  .pedir{display:inline-flex;align-items:center;justify-content:center;min-width:40px;height:32px;
+    padding:0 8px;border-radius:8px;font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .pedir.pos{background:var(--green);color:#062b0d}
+  .pedir.zero{background:var(--gray);color:#c9c2b8}
+  .pedir.neg{background:var(--red);color:#fff}
+  .rowdel{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;line-height:1;}
+  .rowdel:hover{color:var(--red)}.th-x{width:34px}
+  .addrow{display:flex;gap:8px;margin:12px 4px 20px;}
+  .addrow input{flex:1;height:44px;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:10px;color:var(--ink);padding:0 12px;font-size:15px;}
+  .addrow input.small{flex:0 0 74px;text-align:center}
+  .addrow input:focus{outline:none;border-color:var(--focus)}
+  .btn{height:44px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;padding:0 16px;}
+  .btn.primary{background:var(--amber);color:var(--amber-ink)}
+  .btn.ghost{background:var(--panel-2);color:var(--ink);border:1px solid var(--line)}
+  .bar{position:fixed;bottom:0;left:0;right:0;z-index:30;
+    background:linear-gradient(0deg,#12100e,#12100ecc);border-top:1px solid var(--line);
+    padding:12px;display:flex;gap:10px;backdrop-filter:blur(6px);}
+  .bar .btn{flex:1}
+  .editbtn{background:none;border:1px solid var(--line);color:var(--muted);
+    border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer}
+  .editbtn.on{background:var(--amber);color:var(--amber-ink);border-color:var(--amber)}
+  .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .toolbar .hint{color:var(--muted);font-size:12px}
+  .idealedit{width:56px;height:36px;text-align:center;background:#2b2519;border:1px solid var(--focus);
+    border-radius:8px;color:var(--ink);font-size:15px}
+  .empty{color:var(--muted);text-align:center;padding:40px 20px;font-size:14px}
+  .modal-bg{position:fixed;inset:0;background:#000a;z-index:50;display:none;align-items:center;justify-content:center;padding:20px;}
+  .modal-bg.show{display:flex}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;width:100%;max-width:340px;}
+  .modal h3{margin:0 0 14px;font-size:17px}
+  .modal input{width:100%;height:44px;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:10px;color:var(--ink);padding:0 12px;font-size:15px;margin-bottom:12px}
+  .modal input:focus{outline:none;border-color:var(--focus)}
+  .modal .row{display:flex;gap:10px}
+  .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--green);
+    color:#062b0d;padding:10px 18px;border-radius:999px;font-weight:700;font-size:14px;z-index:60;
+    opacity:0;transition:opacity .2s;pointer-events:none;}
+  .toast.show{opacity:1}
+  .toast.bad{background:var(--red);color:#fff}
+  .loading{padding:60px 20px;text-align:center;color:var(--muted)}
+  .setup{max-width:520px;margin:40px auto;padding:24px;background:var(--panel);
+    border:1px solid var(--line);border-radius:14px;line-height:1.6}
+  .setup code{background:#000;padding:2px 6px;border-radius:5px;color:var(--amber);font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <h1>Pedidos</h1>
+    <span class="tag">Kiosco Brandsen</span>
+    <span class="sync" id="sync"></span>
+  </div>
+  <div class="provsel" id="provsel"></div>
+</header>
+
+<main><div id="app"><div class="loading">Cargando…</div></div></main>
+
+<div class="bar">
+  <button class="btn ghost" onclick="resetStock()">Vaciar stock</button>
+  <button class="btn primary" onclick="copyOrder()">Copiar pedido</button>
+</div>
+
+<div class="modal-bg" id="provModal">
+  <div class="modal">
+    <h3>Nuevo proveedor</h3>
+    <input id="provName" placeholder="Nombre del proveedor" maxlength="40">
+    <div class="row">
+      <button class="btn ghost" style="flex:1" onclick="closeProvModal()">Cancelar</button>
+      <button class="btn primary" style="flex:1" onclick="saveProv()">Crear</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   CONFIGURACIÓN — pegá acá tus datos de Supabase (paso 3)
+   ============================================================ */
+const SUPABASE_URL = "https://eydoxxsogxgolfgmesuy.supabase.co";      // ej: https://abcd1234.supabase.co
+const SUPABASE_KEY = "sb_publishable_N1YIbMcLFmcB261Z3HNzkg_4ixNVB6u"; // la clave "anon public"
+/* ============================================================ */
+
+const ROW_ID = 1; // usamos una sola fila que contiene todo el JSON
+let data = null, current = 0, editMode = false;
+let saveTimer = null;
+
+function configOK(){ return SUPABASE_URL.startsWith("http") && SUPABASE_KEY.length>20; }
+
+function defaultData(){
+  return { providers: [
+    { id:'p_lunes', name:'LUNES Lineas Jookey', items:[
+      {name:'Lucky box',ideal:8},{name:'Lucky común',ideal:4},{name:"Lucky 12's",ideal:4},
+      {name:'Lucky box mentolado XL',ideal:7},{name:'Lucky box Lisa XL',ideal:1},
+      {name:'Lucky común mentolado',ideal:7},{name:'Lucky Mentolado 12´s',ideal:8},
+      {name:'Lucky Red XL',ideal:1},{name:"Lucky Red Mix 12's doble cápsula",ideal:2},
+      {name:'Lucky Doble Plus XL',ideal:2},{name:"Lucky Doble Plus 12's",ideal:1},
+      {name:"Lucky ORIGEN 10's",ideal:2},{name:'Lucky ORIGEN Común',ideal:6},
+      {name:'Lucky ORIGEN Box',ideal:2},{name:"Lucky ORIGEN Convertible 10's",ideal:2},
+      {name:'Lucky ORIGEN Convertible Común',ideal:8},{name:'Lucky ORIGEN Convertible Box',ideal:1},
+      {name:'Lucky Dark Box',ideal:3},{name:'Lucky Silver (Pall Mall Suave)',ideal:2},
+      {name:'Lucky Low común',ideal:4},{name:'Camel común',ideal:2},{name:'Camel Box',ideal:2},
+      {name:'Camel Box Activate/Circle',ideal:2},{name:'Camel Box Blue',ideal:1},
+      {name:"Camel 10's",ideal:2},{name:'Camel Legend Box',ideal:2},
+      {name:'Rothmans 43/70 largo',ideal:6},{name:'Tabaco Luckies Original',ideal:8},
+      {name:'Tabaco Luckies Galpon',ideal:8},
+    ]},
+    { id:'p_ejemplo1', name:'Golosinas Distri', items:[
+      {name:'Chicles Beldent surtido',ideal:6},{name:'Alfajor Jorgito x24',ideal:3},{name:'Rocklets pote',ideal:4},
+    ]},
+    { id:'p_ejemplo2', name:'Bebidas', items:[
+      {name:'Coca 500ml x12',ideal:4},{name:'Agua Villa 500ml x12',ideal:3},
+    ]}
+  ], stock:{} };
+}
+
+/* ---------- Supabase (via REST) ---------- */
+function sbHeaders(){
+  return { 'apikey':SUPABASE_KEY, 'Authorization':'Bearer '+SUPABASE_KEY,
+           'Content-Type':'application/json', 'Prefer':'return=representation' };
+}
+async function load(){
+  const url = `${SUPABASE_URL}/rest/v1/pedidos?id=eq.${ROW_ID}&select=data`;
+  const r = await fetch(url,{headers:sbHeaders()});
+  if(!r.ok) throw new Error('load '+r.status);
+  const rows = await r.json();
+  if(rows.length && rows[0].data){ data = rows[0].data; }
+  else { data = defaultData(); await insertRow(); }
+  if(!data.stock) data.stock={};
+}
+async function insertRow(){
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/pedidos`,{
+    method:'POST', headers:sbHeaders(), body:JSON.stringify({id:ROW_ID, data})});
+  if(!r.ok) throw new Error('insert '+r.status);
+}
+async function saveNow(){
+  setSync('Guardando…');
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/pedidos?id=eq.${ROW_ID}`,{
+    method:'PATCH', headers:sbHeaders(), body:JSON.stringify({data})});
+  if(!r.ok){ setSync('Error al guardar', true); return; }
+  setSync('Guardado ✓');
+}
+function save(){ // debounce para no pegarle a la base en cada tecla
+  clearTimeout(saveTimer);
+  setSync('Guardando…');
+  saveTimer = setTimeout(saveNow, 600);
+}
+function setSync(txt,err){ const s=document.getElementById('sync'); s.textContent=txt; s.className='sync'+(err?' err':''); }
+
+/* ---------- Helpers ---------- */
+function prov(){ return data.providers[current]; }
+function stockOf(pid){ if(!data.stock[pid]) data.stock[pid]={}; return data.stock[pid]; }
+function pedirVal(ideal,have){ return (ideal||0)-(have||0); }
+
+/* ---------- Render ---------- */
+function renderProvs(){
+  const el=document.getElementById('provsel'); el.innerHTML='';
+  data.providers.forEach((p,i)=>{
+    const c=document.createElement('button');
+    c.className='chip'+(i===current?' active':''); c.textContent=p.name;
+    c.onclick=()=>{current=i;editMode=false;renderAll();}; el.appendChild(c);
+  });
+  const add=document.createElement('button');
+  add.className='chip add'; add.textContent='+ Proveedor'; add.onclick=openProvModal; el.appendChild(add);
+}
+function renderApp(){
+  const p=prov(), st=stockOf(p.id);
+  let totalPedir=0, faltantes=0;
+  p.items.forEach((it,idx)=>{ const v=pedirVal(it.ideal,st[idx]); if(v>0){totalPedir+=v;faltantes++;} });
+  let html=`
+    <div class="toolbar"><div class="summary" style="flex:1">
+      <div class="stat pedir"><b>${totalPedir}</b><span>Total a pedir</span></div>
+      <div class="stat"><b>${faltantes}</b><span>Productos</span></div>
+      <div class="stat"><b>${p.items.length}</b><span>En lista</span></div>
+    </div></div>
+    <div class="toolbar">
+      <button class="editbtn ${editMode?'on':''}" onclick="toggleEdit()">${editMode?'Listo':'Editar lista / ideales'}</button>
+      ${editMode?'<span class="hint">Editá ideales, borrá o agregá productos</span>':''}
+    </div>
+    <table><thead><tr>
+      <th class="prod">Producto</th><th class="colnum">Ideal</th>
+      <th class="colnum">Hay</th><th class="colnum">Pedir</th>
+      ${editMode?'<th class="th-x"></th>':''}
+    </tr></thead><tbody>`;
+  if(!p.items.length) html+=`<tr><td colspan="5"><div class="empty">Sin productos. Activá “Editar” y agregá.</div></td></tr>`;
+  p.items.forEach((it,idx)=>{
+    const have=st[idx]??''; const v=pedirVal(it.ideal,st[idx]);
+    const cls=v>0?'pos':(v===0?'zero':'neg');
+    html+=`<tr>
+      <td class="prodname">${escapeHtml(it.name)}</td>
+      <td class="cellcenter">${editMode
+        ?`<input class="idealedit" type="number" inputmode="numeric" value="${it.ideal}" onchange="setIdeal(${idx},this.value)">`
+        :`<span class="ideal">${it.ideal}</span>`}</td>
+      <td class="cellcenter"><input class="stock" type="number" inputmode="numeric" value="${have}" placeholder="0" onchange="setStock(${idx},this.value)"></td>
+      <td class="cellcenter"><span class="pedir ${cls}">${v}</span></td>
+      ${editMode?`<td class="cellcenter"><button class="rowdel" onclick="delItem(${idx})">✕</button></td>`:''}
+    </tr>`;
+  });
+  html+=`</tbody></table>`;
+  if(editMode){
+    html+=`<div class="addrow">
+        <input id="newItemName" placeholder="Nuevo producto">
+        <input id="newItemIdeal" class="small" type="number" inputmode="numeric" placeholder="Ideal">
+        <button class="btn primary" onclick="addItem()">Agregar</button>
+      </div>
+      <div class="addrow" style="margin-top:-8px">
+        <button class="btn ghost" style="flex:1" onclick="delProvider()">Eliminar este proveedor</button>
+      </div>`;
+  }
+  document.getElementById('app').innerHTML=html;
+}
+function renderAll(){ renderProvs(); renderApp(); }
+
+/* ---------- Acciones ---------- */
+function toggleEdit(){ editMode=!editMode; renderApp(); }
+function setStock(idx,val){ const st=stockOf(prov().id);
+  if(val===''||val===null) delete st[idx]; else st[idx]=Math.max(0,parseInt(val,10)||0);
+  save(); renderApp(); }
+function setIdeal(idx,val){ prov().items[idx].ideal=Math.max(0,parseInt(val,10)||0); save(); renderApp(); }
+function addItem(){ const n=document.getElementById('newItemName').value.trim();
+  const id=parseInt(document.getElementById('newItemIdeal').value,10);
+  if(!n) return; prov().items.push({name:n,ideal:isNaN(id)?0:Math.max(0,id)}); save(); renderApp(); }
+function delItem(idx){ prov().items.splice(idx,1);
+  const st=stockOf(prov().id); const ns={};
+  Object.keys(st).forEach(k=>{const ki=+k; if(ki<idx)ns[ki]=st[k]; else if(ki>idx)ns[ki-1]=st[k];});
+  data.stock[prov().id]=ns; save(); renderApp(); }
+function resetStock(){ if(!confirm('¿Vaciar el stock cargado de '+prov().name+'?'))return;
+  data.stock[prov().id]={}; save(); renderApp(); toast('Stock vaciado'); }
+function openProvModal(){ document.getElementById('provName').value='';
+  document.getElementById('provModal').classList.add('show'); document.getElementById('provName').focus(); }
+function closeProvModal(){ document.getElementById('provModal').classList.remove('show'); }
+function saveProv(){ const n=document.getElementById('provName').value.trim(); if(!n)return;
+  data.providers.push({id:'p_'+Date.now(),name:n,items:[]}); current=data.providers.length-1;
+  closeProvModal(); editMode=true; save(); renderAll(); }
+function delProvider(){ if(data.providers.length<=1){alert('Tiene que quedar al menos un proveedor.');return;}
+  if(!confirm('¿Eliminar el proveedor '+prov().name+' y su lista?'))return;
+  delete data.stock[prov().id]; data.providers.splice(current,1); current=0; editMode=false; save(); renderAll(); }
+function copyOrder(){ const p=prov(), st=stockOf(p.id); const lines=[];
+  p.items.forEach((it,idx)=>{ const v=pedirVal(it.ideal,st[idx]); if(v>0) lines.push(`${v}  ${it.name}`); });
+  const text=`PEDIDO — ${p.name}\n`+(lines.length?lines.join('\n'):'(nada para pedir)');
+  navigator.clipboard.writeText(text).then(()=>toast('Pedido copiado'),()=>{
+    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');toast('Pedido copiado');}catch(e){alert(text);}ta.remove(); }); }
+function escapeHtml(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+let toastT; function toast(msg,bad){ const t=document.getElementById('toast');t.textContent=msg;
+  t.className='toast show'+(bad?' bad':'');clearTimeout(toastT);toastT=setTimeout(()=>t.className='toast'+(bad?' bad':''),1600); }
+
+/* ---------- Pantalla de configuración si falta Supabase ---------- */
+function showSetup(){
+  document.getElementById('app').innerHTML=`
+  <div class="setup">
+    <h3 style="margin-top:0">Falta configurar la base de datos</h3>
+    <p>Abrí este archivo <code>index.html</code> con el Bloc de notas y, arriba de todo en la parte de CONFIGURACIÓN, pegá tu <code>SUPABASE_URL</code> y tu <code>SUPABASE_KEY</code>. Después volvé a subirlo.</p>
+    <p style="color:var(--muted)">Seguí los pasos que te pasaron por chat. Una vez cargados los datos, esta pantalla desaparece sola.</p>
+  </div>`;
+}
+
+/* ---------- Init ---------- */
+(async function(){
+  if(!configOK()){ showSetup(); return; }
+  try{ await load(); renderAll(); setSync('Guardado ✓'); }
+  catch(e){ console.error(e); setSync('Error de conexión', true);
+    document.getElementById('app').innerHTML=`<div class="setup">
+      <h3 style="margin-top:0">No se pudo conectar a la base de datos</h3>
+      <p>Revisá que la URL y la clave de Supabase estén bien pegadas, y que hayas creado la tabla <code>pedidos</code>.</p></div>`; }
+})();
+</script>
+</body>
+</html>
