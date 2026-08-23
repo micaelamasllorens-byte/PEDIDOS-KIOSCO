@@ -167,37 +167,38 @@ function jockeyDefaultVariant(){
   const d=new Date().getDay(); // 0=dom,1=lun,2=mar,3=mie,4=jue,5=vie,6=sab
   return d===1?'L':'J';
 }
+const JOCKEY_REV=2;
 function jockeyProvider(){
-  return { id:'p_lunes', name:'JOCKEY', variants:JOCKEY_VARIANTS, activeVariant:jockeyDefaultVariant(), items:[
-    {name:'Lucky box', idealByVariant:{L:6,J:5}},
-    {name:'Lucky común', idealByVariant:{L:4,J:5}},
-    {name:"Lucky 12's", idealByVariant:{L:4,J:5}},
-    {name:'Lucky box mentolado XL', idealByVariant:{L:7,J:6}},
+  return { id:'p_lunes', name:'JOCKEY', variants:JOCKEY_VARIANTS, activeVariant:jockeyDefaultVariant(), rev:JOCKEY_REV, items:[
+    {name:'Lucky box', idealByVariant:{L:6,J:6}},
+    {name:'Lucky común', idealByVariant:{L:5,J:5}},
+    {name:"Lucky 12's", idealByVariant:{L:6,J:7}},
+    {name:'Lucky box mentolado XL', idealByVariant:{L:8,J:8}},
     {name:'Lucky box Uva XL', idealByVariant:{L:1,J:1}},
-    {name:'Lucky común mentolado', idealByVariant:{L:7,J:4}},
-    {name:"Lucky Mentolado 12's", idealByVariant:{L:6,J:7}},
+    {name:'Lucky común mentolado', idealByVariant:{L:8,J:10}},
+    {name:"Lucky Mentolado 12's", idealByVariant:{L:6,J:8}},
     {name:'Lucky Red XL', idealByVariant:{L:1,J:1}},
-    {name:"Lucky Red Mix 12's doble cápsula", idealByVariant:{L:1,J:0}},
-    {name:'Lucky Doble Plus XL', idealByVariant:{L:2,J:0}},
-    {name:"Lucky Doble Plus 12's", idealByVariant:{L:0,J:1}},
+    {name:"Lucky Red Mix 12's doble cápsula", idealByVariant:{L:1,J:1}},
+    {name:'Lucky Doble Plus XL', idealByVariant:{L:1,J:1}},
+    {name:"Lucky Doble Plus 12's", idealByVariant:{L:1,J:1}},
     {name:"Lucky ORIGEN 10's", idealByVariant:{L:1,J:1}},
-    {name:'Lucky ORIGEN Común', idealByVariant:{L:6,J:4}},
+    {name:'Lucky ORIGEN Común', idealByVariant:{L:7,J:7}},
     {name:'Lucky ORIGEN Box', idealByVariant:{L:2,J:2}},
-    {name:"Lucky ORIGEN Convertible 10's", idealByVariant:{L:2,J:1}},
+    {name:"Lucky ORIGEN Convertible 10's", idealByVariant:{L:1,J:1}},
     {name:'Lucky ORIGEN Convertible Común', idealByVariant:{L:6,J:7}},
-    {name:'Lucky ORIGEN Convertible Box', idealByVariant:{L:3,J:3}},
-    {name:'Lucky Dark Box', idealByVariant:{L:0,J:1}},
-    {name:'Lucky Silver (Pall Mall Suave)', idealByVariant:{L:3,J:2}},
-    {name:'Lucky Low común', idealByVariant:{L:4,J:5}},
-    {name:'Camel común', idealByVariant:{L:2,J:1}},
-    {name:'Camel Box', idealByVariant:{L:2,J:3}},
+    {name:'Lucky ORIGEN Convertible Box', idealByVariant:{L:4,J:4}},
+    {name:'Lucky Dark Box', idealByVariant:{L:1,J:1}},
+    {name:'Lucky Silver (Pall Mall Suave)', idealByVariant:{L:3,J:3}},
+    {name:'Lucky Low común', idealByVariant:{L:5,J:5}},
+    {name:'Camel común', idealByVariant:{L:2,J:2}},
+    {name:'Camel Box', idealByVariant:{L:3,J:3}},
     {name:'Camel Box Activate/Circle', idealByVariant:{L:1,J:1}},
     {name:'Camel Box Blue', idealByVariant:{L:1,J:1}},
-    {name:"Camel 10's", idealByVariant:{L:2,J:1}},
+    {name:"Camel 10's", idealByVariant:{L:1,J:1}},
     {name:'Camel Legend Box', idealByVariant:{L:5,J:5}},
-    {name:'Rothmans 43/70 largo', idealByVariant:{L:1,J:1}},
-    {name:'Tabaco Luckies Original', idealByVariant:{L:6,J:12}},
-    {name:'Tabaco Luckies Galpón', idealByVariant:{L:0,J:0}},
+    {name:'Rothmans 43/70 largo', idealByVariant:{L:1,J:0}},
+    {name:'Tabaco Luckies Original', idealByVariant:{L:12,J:12}},
+    {name:'Tabaco Luckies Galpón', idealByVariant:{L:6,J:6}},
   ]};
 }
 const SEASON_VARIANTS=[{key:'W',label:'❄ Invierno'},{key:'S',label:'☀ Verano'}];
@@ -220,49 +221,50 @@ function danyDefaultVariant(){
   const d=new Date().getDay(); // 0=dom,1=lun,2=mar,3=mie,4=jue,5=vie,6=sab
   if(d===3) return 'M'; if(d===5||d===6||d===0) return 'V'; return 'L';
 }
+const CASADANY_REV=2;
 function casaDanyProvider(){
-  return { id:'p_casadany', name:'CASA DANY', variants:DANY_VARIANTS, activeVariant:danyDefaultVariant(), items:[
-    {name:'Marlboro Box', idealByVariant:{L:7,M:6,V:4}},
-    {name:'Marlboro común', idealByVariant:{L:5,M:5,V:3}},
-    {name:'Crafted Box', idealByVariant:{L:2,M:6,V:1}},
-    {name:'Crafted Mentol Box', idealByVariant:{L:3,M:2,V:5}},
-    {name:'Crafted Mentol Común', idealByVariant:{L:4,M:5,V:2}},
-    {name:'Crafted Suave Común', idealByVariant:{L:5,M:5,V:3}},
-    {name:'Crafted Común', idealByVariant:{L:12,M:11,V:9}},
-    {name:'Crafted Coral Box', idealByVariant:{L:4,M:4,V:3}},
-    {name:'Crafted Uva Box', idealByVariant:{L:3,M:2,V:1}},
-    {name:"Marlboro 12's", idealByVariant:{L:3,M:6,V:5}},
-    {name:"Marlboro 12's Fusion", idealByVariant:{L:2,M:3,V:3}},
-    {name:'Marlboro Box Ice Blast', idealByVariant:{L:2,M:2,V:3}},
-    {name:'Marlboro Box Fusion', idealByVariant:{L:4,M:3,V:4}},
+  return { id:'p_casadany', name:'CASA DANY', variants:DANY_VARIANTS, activeVariant:danyDefaultVariant(), rev:CASADANY_REV, items:[
+    {name:'Marlboro Box', idealByVariant:{L:7,M:7,V:8}},
+    {name:'Marlboro común', idealByVariant:{L:5,M:5,V:7}},
+    {name:'Crafted Box', idealByVariant:{L:5,M:4,V:5}},
+    {name:'Crafted Mentol Box', idealByVariant:{L:3,M:4,V:4}},
+    {name:'Crafted Mentol Común', idealByVariant:{L:5,M:5,V:6}},
+    {name:'Crafted Suave Común', idealByVariant:{L:5,M:4,V:6}},
+    {name:'Crafted Común', idealByVariant:{L:12,M:12,V:15}},
+    {name:'Crafted Coral Box', idealByVariant:{L:3,M:4,V:5}},
+    {name:'Crafted Uva Box', idealByVariant:{L:3,M:3,V:3}},
+    {name:"Marlboro 12's", idealByVariant:{L:5,M:6,V:6}},
+    {name:"Marlboro 12's Fusion", idealByVariant:{L:3,M:3,V:3}},
+    {name:'Marlboro Box Ice Blast', idealByVariant:{L:2,M:3,V:3}},
+    {name:'Marlboro Box Fusion', idealByVariant:{L:4,M:4,V:4}},
     {name:'Marlboro Box Summer', idealByVariant:{L:2,M:2,V:2}},
-    {name:'Marlboro Gold', idealByVariant:{L:2,M:2,V:1}},
-    {name:'Phillip común', idealByVariant:{L:4,M:4,V:4}},
-    {name:'Phillip box', idealByVariant:{L:4,M:5,V:3}},
-    {name:'Phillip Caps box', idealByVariant:{L:2,M:4,V:3}},
-    {name:"Phillip 12's", idealByVariant:{L:6,M:5,V:6}},
-    {name:"Phillip Caps 12's", idealByVariant:{L:4,M:7,V:6}},
-    {name:'Phillip Red Select NUEVO', idealByVariant:{L:1,M:6,V:3}},
-    {name:'Phillip Blue Select NUEVO Mentolado', idealByVariant:{L:5,M:5,V:4}},
-    {name:'Chester común', idealByVariant:{L:2,M:3,V:2}},
+    {name:'Marlboro Gold', idealByVariant:{L:2,M:2,V:2}},
+    {name:'Phillip común', idealByVariant:{L:4,M:6,V:7}},
+    {name:'Phillip box', idealByVariant:{L:4,M:3,V:4}},
+    {name:'Phillip Caps box', idealByVariant:{L:6,M:4,V:3}},
+    {name:"Phillip 12's", idealByVariant:{L:5,M:6,V:6}},
+    {name:"Phillip Caps 12's", idealByVariant:{L:7,M:6,V:7}},
+    {name:'Phillip Red Select NUEVO', idealByVariant:{L:5,M:6,V:5}},
+    {name:'Phillip Blue Select NUEVO Mentolado', idealByVariant:{L:4,M:3,V:4}},
+    {name:'Chester común', idealByVariant:{L:3,M:3,V:4}},
     {name:'L&M Cigarrito Red Label', idealByVariant:{L:0,M:0,V:0}},
-    {name:'Chester mentolado box', idealByVariant:{L:0,M:0,V:0}},
-    {name:'Chester mentolado común', idealByVariant:{L:1,M:2,V:1}},
+    {name:'Chester mentolado box', idealByVariant:{L:1,M:0,V:1}},
+    {name:'Chester mentolado común', idealByVariant:{L:2,M:2,V:2}},
     {name:'Chester uva box', idealByVariant:{L:1,M:1,V:1}},
-    {name:"Chester 10's", idealByVariant:{L:4,M:3,V:2}},
-    {name:"Chester 10's mentolado", idealByVariant:{L:4,M:4,V:4}},
+    {name:"Chester 10's", idealByVariant:{L:3,M:3,V:3}},
+    {name:"Chester 10's mentolado", idealByVariant:{L:3,M:3,V:3}},
     {name:'Parliament Blue Titanium', idealByVariant:{L:3,M:3,V:3}},
-    {name:'Parliament Super Slim (Virginia) — carton trae 15', idealByVariant:{L:3,M:3,V:2}},
-    {name:'Harmony Dorado (negro)', idealByVariant:{L:1,M:2,V:1}},
+    {name:'Parliament Super Slim (Virginia) — carton trae 15', idealByVariant:{L:1,M:2,V:2}},
+    {name:'Harmony Dorado (negro)', idealByVariant:{L:2,M:1,V:1}},
     {name:'Zyn Black Cherry 1.5 mg', idealByVariant:{L:3,M:3,V:3}},
-    {name:'Zyn Black Cherry 3 mg', idealByVariant:{L:3,M:3,V:3}},
-    {name:'Zyn Black Cherry 6 mg', idealByVariant:{L:1,M:3,V:2}},
+    {name:'Zyn Black Cherry 3 mg', idealByVariant:{L:5,M:5,V:5}},
+    {name:'Zyn Black Cherry 6 mg', idealByVariant:{L:3,M:3,V:3}},
     {name:'Zyn Cool Mint 1.5 mg', idealByVariant:{L:3,M:3,V:3}},
     {name:'Zyn Cool Mint 3 mg', idealByVariant:{L:3,M:3,V:3}},
-    {name:'Zyn Cool Mint 6 mg', idealByVariant:{L:2,M:3,V:2}},
-    {name:'Zyn Spearmint 1.5 mg', idealByVariant:{L:2,M:3,V:3}},
+    {name:'Zyn Cool Mint 6 mg', idealByVariant:{L:3,M:3,V:3}},
+    {name:'Zyn Spearmint 1.5 mg', idealByVariant:{L:3,M:3,V:3}},
     {name:'Zyn Spearmint 3 mg', idealByVariant:{L:3,M:3,V:3}},
-    {name:'Zyn Spearmint 6 mg', idealByVariant:{L:2,M:3,V:2}},
+    {name:'Zyn Spearmint 6 mg', idealByVariant:{L:3,M:3,V:3}},
   ]};
 }
 
@@ -282,9 +284,10 @@ async function load(){
   let migrated=false;
   let jookey=data.providers.find(p=>p.id==='p_lunes');
   if(!jookey){ data.providers.push(jockeyProvider()); migrated=true; }
-  else if(!jookey.variants){ // reemplaza la lista vieja de un solo día por la real con Lunes/Jueves
+  else if(!jookey.variants || (jookey.rev||1)<JOCKEY_REV){ // trae la lista real (Lunes/Jueves) con los ideales correctos
     const fresh=jockeyProvider();
-    jookey.name=fresh.name; jookey.variants=fresh.variants; jookey.activeVariant=fresh.activeVariant; jookey.items=fresh.items;
+    jookey.name=fresh.name; jookey.variants=fresh.variants; jookey.items=fresh.items; jookey.rev=fresh.rev;
+    if(!jookey.activeVariant || !fresh.variants.some(v=>v.key===jookey.activeVariant)) jookey.activeVariant=fresh.activeVariant;
     migrated=true;
   }
   let yafema=data.providers.find(p=>p.id==='p_yafema');
@@ -294,7 +297,13 @@ async function load(){
     yafema.items.forEach(it=>{ if(it.idealW!==undefined){ it.idealByVariant={W:it.idealW,S:it.idealS}; delete it.idealW; delete it.idealS; } });
     migrated=true;
   }
-  if(!data.providers.some(p=>p.id==='p_casadany')){ data.providers.push(casaDanyProvider()); migrated=true; }
+  let casaDany=data.providers.find(p=>p.id==='p_casadany');
+  if(!casaDany){ data.providers.push(casaDanyProvider()); migrated=true; }
+  else if((casaDany.rev||1)<CASADANY_REV){ // trae los ideales corregidos (columna PEDIR real)
+    const fresh=casaDanyProvider();
+    casaDany.items=fresh.items; casaDany.rev=fresh.rev;
+    migrated=true;
+  }
   const exampleIds=['p_ejemplo1','p_ejemplo2'];
   if(data.providers.some(p=>exampleIds.includes(p.id))){
     data.providers = data.providers.filter(p=>{
