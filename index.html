@@ -209,6 +209,24 @@ function yafemaProvider(){
     {name:'Levité 500ml (sabor a definir)', idealByVariant:{W:0,S:1}},
   ]};
 }
+function pepsicoProvider(){
+  return { id:'p_pepsico', name:'PEPSICO - Papas Lays', items:[
+    {name:'Lays clásicas 134gr',ideal:10},{name:'Lays clásicas 330gr',ideal:3},
+    {name:'Lays clásicas 85gr',ideal:10},{name:'Lays clásicas 40gr',ideal:6},
+    {name:'Lays panceta 77gr',ideal:4},{name:'Lays jamón serrano 77gr',ideal:4},
+    {name:'Lays provoleta 77gr',ideal:4},{name:'Lays Ketchup 77gr',ideal:4},
+    {name:'Lays Queso y cebolla 77gr',ideal:4},{name:'Lays barbacoa 77gr',ideal:4},
+    {name:'Lays acanaladas asado 77gr',ideal:4},
+    {name:'Doritos flaming hot 82gr',ideal:4},
+    {name:'Doritos 40gr',ideal:6},{name:'Doritos 77gr',ideal:10},
+    {name:'Doritos 129gr',ideal:10},{name:'Doritos Pizza 74gr',ideal:4},
+    {name:'Cheetos 43gr',ideal:5},{name:'Cheetos 85gr',ideal:8},{name:'Cheetos 140gr',ideal:6},
+    {name:'3D 43gr',ideal:5},{name:'3D 85gr',ideal:8},{name:'3D 143gr',ideal:6},
+    {name:'Rueditas PEP 120gr',ideal:6},
+    {name:'Maní Pehuamar 135gr',ideal:10},
+    {name:'Twistos Jamón 95gr',ideal:6},{name:'Twistos Queso 95gr',ideal:6},
+  ]};
+}
 const DANY_VARIANTS=[{key:'L',label:'Lunes'},{key:'M',label:'Miércoles'},{key:'V',label:'Viernes'}];
 function danyDefaultVariant(){
   const d=new Date().getDay(); // 0=dom,1=lun,2=mar,3=mie,4=jue,5=vie,6=sab
@@ -297,6 +315,7 @@ async function load(){
     casaDany.items=fresh.items; casaDany.rev=fresh.rev;
     migrated=true;
   }
+  if(!data.providers.some(p=>p.id==='p_pepsico')){ data.providers.push(pepsicoProvider()); migrated=true; }
   const exampleIds=['p_ejemplo1','p_ejemplo2'];
   if(data.providers.some(p=>exampleIds.includes(p.id))){
     data.providers = data.providers.filter(p=>{
