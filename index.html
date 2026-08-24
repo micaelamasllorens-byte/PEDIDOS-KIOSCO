@@ -136,6 +136,18 @@
   </div>
 </div>
 
+<div class="modal-bg" id="pinModal">
+  <div class="modal">
+    <h3>Código de acceso</h3>
+    <input id="pinInput" type="password" inputmode="numeric" placeholder="PIN" maxlength="8"
+      onkeydown="if(event.key==='Enter')confirmPin()">
+    <div class="row">
+      <button class="btn ghost" style="flex:1" onclick="closePinModal()">Cancelar</button>
+      <button class="btn primary" style="flex:1" onclick="confirmPin()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -147,8 +159,27 @@ const SUPABASE_KEY = "sb_publishable_N1YIbMcLFmcB261Z3HNzkg_4ixNVB6u"; // la cla
 /* ============================================================ */
 
 const ROW_ID = 1; // usamos una sola fila que contiene todo el JSON
-let data = null, current = 0, editMode = false;
+const ADMIN_PIN = "2323"; // código para poder editar ideales / productos / proveedores
+let data = null, current = 0, editMode = false, unlocked = false, pinCallback = null;
 let saveTimer = null;
+
+function requireUnlock(cb){
+  if(unlocked){ cb(); return; }
+  pinCallback = cb;
+  document.getElementById('pinInput').value = '';
+  document.getElementById('pinModal').classList.add('show');
+  document.getElementById('pinInput').focus();
+}
+function closePinModal(){ document.getElementById('pinModal').classList.remove('show'); pinCallback = null; }
+function confirmPin(){
+  const v = document.getElementById('pinInput').value.trim();
+  if(v === ADMIN_PIN){
+    unlocked = true;
+    document.getElementById('pinModal').classList.remove('show');
+    const cb = pinCallback; pinCallback = null;
+    if(cb) cb();
+  } else { toast('Código incorrecto', true); }
+}
 
 function configOK(){ return SUPABASE_URL.startsWith("http") && SUPABASE_KEY.length>20; }
 
@@ -418,7 +449,10 @@ function renderApp(){
 function renderAll(){ renderProvs(); renderApp(); }
 
 /* ---------- Acciones ---------- */
-function toggleEdit(){ editMode=!editMode; renderApp(); }
+function toggleEdit(){
+  if(editMode){ editMode=false; renderApp(); return; }
+  requireUnlock(()=>{ editMode=true; renderApp(); });
+}
 function setStock(idx,val){ const st=stockOf(prov().id);
   if(val===''||val===null) delete st[idx]; else st[idx]=Math.max(0,parseInt(val,10)||0);
   save(); renderApp(); }
@@ -433,8 +467,9 @@ function delItem(idx){ prov().items.splice(idx,1);
   data.stock[prov().id]=ns; save(); renderApp(); }
 function resetStock(){ if(!confirm('¿Vaciar el stock cargado de '+prov().name+'?'))return;
   data.stock[prov().id]={}; save(); renderApp(); toast('Stock vaciado'); }
-function openProvModal(){ document.getElementById('provName').value='';
-  document.getElementById('provModal').classList.add('show'); document.getElementById('provName').focus(); }
+function openProvModal(){ requireUnlock(()=>{
+  document.getElementById('provName').value='';
+  document.getElementById('provModal').classList.add('show'); document.getElementById('provName').focus(); }); }
 function closeProvModal(){ document.getElementById('provModal').classList.remove('show'); }
 function saveProv(){ const n=document.getElementById('provName').value.trim(); if(!n)return;
   data.providers.push({id:'p_'+Date.now(),name:n,items:[]}); current=data.providers.length-1;
