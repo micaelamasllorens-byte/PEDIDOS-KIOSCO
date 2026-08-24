@@ -76,6 +76,9 @@
   .editbtn{background:none;border:1px solid var(--line);color:var(--muted);
     border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer}
   .editbtn.on{background:var(--amber);color:var(--amber-ink);border-color:var(--amber)}
+  select.employee{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);
+    border-radius:8px;padding:6px 10px;font-size:13px}
+  select.employee:focus{outline:none;border-color:var(--focus)}
   .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
   .toolbar .hint{color:var(--muted);font-size:12px}
   .idealedit{width:56px;height:36px;text-align:center;background:#2b2519;border:1px solid var(--focus);
@@ -160,6 +163,7 @@ const SUPABASE_KEY = "sb_publishable_N1YIbMcLFmcB261Z3HNzkg_4ixNVB6u"; // la cla
 
 const ROW_ID = 1; // usamos una sola fila que contiene todo el JSON
 const ADMIN_PIN = "2323"; // código para poder editar ideales / productos / proveedores
+const EMPLOYEES = ["Kary","Lucas","Ivo","Gabi","Marcos","Tizi","Ari","Mica"];
 let data = null, current = 0, editMode = false, unlocked = false, pinCallback = null;
 let saveTimer = null;
 
@@ -384,6 +388,7 @@ function pedirVal(ideal,have){ return (ideal||0)-(have||0); }
 function isVariant(item){ return !!item.idealByVariant; }
 function effIdeal(item,p){ return isVariant(item)?(item.idealByVariant[p.activeVariant]||0):(item.ideal||0); }
 function setVariant(key){ prov().activeVariant=key; save(); renderAll(); }
+function setEmployee(name){ prov().employee=name; save(); }
 
 /* ---------- Render ---------- */
 function renderProvs(){
@@ -410,6 +415,13 @@ function renderApp(){
     ${hasVariants?`<div class="toolbar">
       ${p.variants.map(v=>`<button class="editbtn ${p.activeVariant===v.key?'on':''}" onclick="setVariant('${v.key}')">${v.label}</button>`).join('')}
     </div>`:''}
+    <div class="toolbar">
+      <span class="hint">Pedido por:</span>
+      <select class="employee" onchange="setEmployee(this.value)">
+        <option value="">— Elegir —</option>
+        ${EMPLOYEES.map(n=>`<option value="${n}" ${p.employee===n?'selected':''}>${n}</option>`).join('')}
+      </select>
+    </div>
     <div class="toolbar">
       <button class="editbtn ${editMode?'on':''}" onclick="toggleEdit()">${editMode?'Listo':'Editar lista / ideales'}</button>
       ${editMode?'<span class="hint">Editá ideales, borrá o agregá productos</span>':''}
@@ -479,7 +491,8 @@ function delProvider(){ if(data.providers.length<=1){alert('Tiene que quedar al 
   delete data.stock[prov().id]; data.providers.splice(current,1); current=0; editMode=false; save(); renderAll(); }
 function buildOrderText(){ const p=prov(), st=stockOf(p.id); const lines=[];
   p.items.forEach((it,idx)=>{ const v=pedirVal(effIdeal(it,p),st[idx]); if(v>0) lines.push(`${v}  ${it.name}`); });
-  return `PEDIDO — ${p.name}\n`+(lines.length?lines.join('\n'):'(nada para pedir)'); }
+  const quien=p.employee?`\nPedido por: ${p.employee}`:'';
+  return `PEDIDO — ${p.name}${quien}\n`+(lines.length?lines.join('\n'):'(nada para pedir)'); }
 function copyOrder(){ const text=buildOrderText();
   navigator.clipboard.writeText(text).then(()=>toast('Pedido copiado'),()=>{
     const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();
