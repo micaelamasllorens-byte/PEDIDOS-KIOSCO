@@ -9,7 +9,7 @@
     --bg:#161211;--panel:#211a18;--panel-2:#2b211d;--line:#3a2c26;
     --ink:#f6efe6;--muted:#a89a8c;--amber:#e2c21f;--amber-ink:#2a1f00;
     --green:#3fa34d;--red:#a41f22;--gray:#4a443c;--focus:#ffd94d;
-    --brand:#a41f22;--brand-2:#7c1518;
+    --brand:#a41f22;--brand-2:#7c1518;--blue:#2f8fd1;--blue-ink:#052033;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
@@ -37,6 +37,11 @@
   .chip.active{background:var(--amber);color:var(--amber-ink);border-color:var(--amber)}
   .chip.add{color:var(--amber);border-style:dashed}
   main{padding:14px 12px 0}
+  .typebadge{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;
+    font-size:12px;font-weight:800;margin-bottom:12px;letter-spacing:.2px}
+  .typebadge.classic{background:var(--amber);color:var(--amber-ink)}
+  .typebadge.simple{background:var(--green);color:#062b0d}
+  .typebadge.stock{background:var(--blue);color:var(--blue-ink)}
   .summary{display:flex;gap:10px;margin-bottom:12px;}
   .stat{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:12px;
     padding:12px;text-align:center;}
@@ -191,19 +196,20 @@
       <p>Arriba de todo hay un botón por cada proveedor que tengas cargado. Tocá el que quieras usar. El botón <b>"+ Proveedor"</b> crea uno nuevo (pide código PIN).</p>
 
       <h4>2. Los 3 tipos de lista</h4>
-      <p><b>• Clásica (Ideal / Hay / Pedir)</b><br>
-      <b>Ideal</b> es la cantidad que siempre deberías tener de ese producto. <b>Hay</b> es lo que contaste hoy en el kiosco (lo cargás vos). <b>Pedir</b> lo calcula la app sola (Ideal − Hay): en verde si hay que pedir, gris si está completo, rojo si tenés de más.</p>
-      <p><b>• Pedido simple (Cantidad + Vencimiento)</b><br>
+      <p>Cada proveedor muestra un cartelito de color arriba de todo para que sepas de un vistazo en qué tipo de lista estás:</p>
+      <p><span class="typebadge classic" style="margin:0">🎯 Pedido clásico</span><br>
+      <b>Ideal</b> es la cantidad que siempre deberías tener de ese producto. <b>Hay</b> es lo que contaste hoy en el kiosco (lo cargás vos). <b>Pedir</b> lo calcula la app sola (Ideal − Hay): en verde si hay que pedir, gris si está completo, rojo si tenés de más. La columna Ideal viene oculta para no saturar la vista: tocá <b>"Mostrar ideal"</b> para verla, o entrá a "Editar lista" (ahí siempre se ve, para poder cambiarla).</p>
+      <p><span class="typebadge simple" style="margin:0">🧮 Pedido simple</span><br>
       No hay ideal ni stock: cargás directo cuánto querés pedir de cada producto y, si querés, la fecha de vencimiento.</p>
-      <p><b>• Solo stock</b><br>
+      <p><span class="typebadge stock" style="margin:0">📋 Solo stock</span><br>
       No hay ideal ni "pedir": solo anotás el stock que tenés de cada producto. Podés escribir cualquier texto, no hace falta que sea un número (por ejemplo "5 cajas + 6 unidades" también sirve). Además tiene un campo "Stock al" para poner la fecha del conteo.</p>
-      <p><b>• Vencimiento (opcional, en Clásica o Solo stock)</b><br>
+      <p><b>• Vencimiento (opcional, en Clásico o Solo stock)</b><br>
       Al crear el proveedor podés sumarle una columna de <b>Vencimiento</b>. Es un campo de texto libre: si un producto tiene lotes con fechas distintas, escribilas juntas en el mismo campo (ej: "10/10/26 y 15/12/26").</p>
 
       <h4>3. Botones de abajo</h4>
       <p><b>Vaciar stock</b>: borra lo que cargaste (Hay, Cantidad o Stock, según la lista) para volver a empezar de cero. Pide confirmación.<br>
-      <b>Copiar pedido</b>: copia el texto del pedido/stock para pegarlo donde quieras.<br>
-      <b>Enviar a Ari / Enviar a Mica</b>: abre WhatsApp con ese texto ya armado, listo para mandar.</p>
+      <b>Copiar pedido</b>: copia el texto del pedido/stock, ya prolijo y con emojis, para pegarlo donde quieras.<br>
+      <b>Enviar a Ari / Enviar a Mica</b>: abre WhatsApp con ese mismo texto ya armado, listo para mandar.</p>
 
       <h4>4. "Pedido por"</h4>
       <p>Elegí en el desplegable quién está haciendo el pedido. Queda guardado en esa lista y aparece en el texto del pedido.</p>
@@ -233,7 +239,7 @@ const SUPABASE_KEY = "sb_publishable_N1YIbMcLFmcB261Z3HNzkg_4ixNVB6u"; // la cla
 const ROW_ID = 1; // usamos una sola fila que contiene todo el JSON
 const ADMIN_PIN = "2323"; // código para poder editar ideales / productos / proveedores
 const EMPLOYEES = ["Kary","Lucas","Ivo","Gabi","Marcos","Tizi","Ari","Mica"];
-let data = null, current = 0, editMode = false, unlocked = false, pinCallback = null;
+let data = null, current = 0, editMode = false, showIdeal = false, unlocked = false, pinCallback = null;
 let saveTimer = null;
 
 function requireUnlock(cb){
@@ -543,7 +549,7 @@ function renderProvs(){
   data.providers.forEach((p,i)=>{
     const c=document.createElement('button');
     c.className='chip'+(i===current?' active':''); c.textContent=p.name;
-    c.onclick=()=>{current=i;editMode=false;renderAll();}; el.appendChild(c);
+    c.onclick=()=>{current=i;editMode=false;showIdeal=false;renderAll();}; el.appendChild(c);
   });
   const add=document.createElement('button');
   add.className='chip add'; add.textContent='+ Proveedor'; add.onclick=openProvModal; el.appendChild(add);
@@ -561,7 +567,13 @@ function renderApp(){
     p.items.forEach((it,idx)=>{ const v=pedirVal(effIdeal(it,p),st[idx]); if(v>0){totalPedir+=v;faltantes++;} });
   }
   const simpleLike=p.simple||p.stockOnly;
+  const typeClass=p.simple?'simple':(p.stockOnly?'stock':'classic');
+  const typeLabel=p.simple?'🧮 Pedido simple (Cantidad + Vencimiento)'
+    :(p.stockOnly?'📋 Solo stock'+(p.withExpiry?' + Vencimiento':'')
+    :'🎯 Pedido clásico (Ideal / Hay / Pedir)'+(p.withExpiry?' + Vencimiento':''));
+  const idealVisible=!p.simple && !p.stockOnly && (showIdeal||editMode);
   let html=`
+    <div class="typebadge ${typeClass}">${typeLabel}</div>
     <div class="toolbar"><div class="summary" style="flex:1">
       <div class="stat pedir"><b>${totalPedir}</b><span>${p.stockOnly?'Cargados':'Total a pedir'}</span></div>
       <div class="stat"><b>${faltantes}</b><span>${p.stockOnly?'Sin cargar':'Productos'}</span></div>
@@ -583,12 +595,13 @@ function renderApp(){
     </div>
     <div class="toolbar">
       <button class="editbtn ${editMode?'on':''}" onclick="toggleEdit()">${editMode?'Listo':(simpleLike?'Editar lista':'Editar lista / ideales')}</button>
+      ${!p.simple&&!p.stockOnly&&!editMode?`<button class="editbtn ${showIdeal?'on':''}" onclick="toggleIdeal()">${showIdeal?'Ocultar ideal':'Mostrar ideal'}</button>`:''}
       ${editMode?`<span class="hint">${simpleLike?'Borrá o agregá productos':'Editá ideales, borrá o agregá productos'}</span>`:''}
     </div>`;
   if(p.stockOnly){
     html+=`<table><thead><tr>
-      <th class="prod">Producto</th><th class="colwide">Stock</th>
-      ${p.withExpiry?'<th class="colwide">Vencimiento</th>':''}
+      <th class="prod">Producto</th><th class="colwide">📦 Stock</th>
+      ${p.withExpiry?'<th class="colwide">📅 Vencimiento</th>':''}
       ${editMode?'<th class="th-x"></th>':''}
     </tr></thead><tbody>`;
     if(!p.items.length) html+=`<tr><td colspan="${3+(p.withExpiry?1:0)}"><div class="empty">Sin productos. Activá “Editar” y agregá.</div></td></tr>`;
@@ -613,8 +626,8 @@ function renderApp(){
     }
   } else if(p.simple){
     html+=`<table><thead><tr>
-      <th class="prod">Producto</th><th class="colnum">Cantidad</th>
-      <th class="colwide">Vencimiento</th>
+      <th class="prod">Producto</th><th class="colnum">🧮 Cantidad</th>
+      <th class="colwide">📅 Vencimiento</th>
       ${editMode?'<th class="th-x"></th>':''}
     </tr></thead><tbody>`;
     if(!p.items.length) html+=`<tr><td colspan="4"><div class="empty">Sin productos. Activá “Editar” y agregá.</div></td></tr>`;
@@ -639,20 +652,21 @@ function renderApp(){
     }
   } else {
     html+=`<table><thead><tr>
-      <th class="prod">Producto</th><th class="colnum">Ideal</th>
-      <th class="colnum">Hay</th><th class="colnum">Pedir</th>
-      ${p.withExpiry?'<th class="colwide">Vencimiento</th>':''}
+      <th class="prod">Producto</th>${idealVisible?'<th class="colnum">🎯 Ideal</th>':''}
+      <th class="colnum">📦 Hay</th><th class="colnum">🛒 Pedir</th>
+      ${p.withExpiry?'<th class="colwide">📅 Vencimiento</th>':''}
       ${editMode?'<th class="th-x"></th>':''}
     </tr></thead><tbody>`;
-    if(!p.items.length) html+=`<tr><td colspan="${5+(p.withExpiry?1:0)}"><div class="empty">Sin productos. Activá “Editar” y agregá.</div></td></tr>`;
+    const colCount=3+(idealVisible?1:0)+(p.withExpiry?1:0)+(editMode?1:0);
+    if(!p.items.length) html+=`<tr><td colspan="${colCount}"><div class="empty">Sin productos. Activá “Editar” y agregá.</div></td></tr>`;
     p.items.forEach((it,idx)=>{
       const have=st[idx]??''; const ideal=effIdeal(it,p); const v=pedirVal(ideal,st[idx]);
       const cls=v>0?'pos':(v===0?'zero':'neg'); const exp=it.expiry||'';
       html+=`<tr>
         <td class="prodname">${escapeHtml(it.name)}</td>
-        <td class="cellcenter">${editMode
+        ${idealVisible?`<td class="cellcenter">${editMode
           ?`<input class="idealedit" type="number" inputmode="numeric" value="${ideal}" onchange="setIdeal(${idx},this.value)">`
-          :`<span class="ideal">${ideal}</span>`}</td>
+          :`<span class="ideal">${ideal}</span>`}</td>`:''}
         <td class="cellcenter"><input class="stock" type="number" inputmode="numeric" value="${have}" placeholder="0" onchange="setStock(${idx},this.value)"></td>
         <td class="cellcenter"><span class="pedir ${cls}">${v}</span></td>
         ${p.withExpiry?`<td class="cellcenter"><input class="stocktext" type="text" value="${escapeHtml(exp)}" placeholder="ej: 10/10/26 y 15/12/26" onchange="setStockExpiry(${idx},this.value)"></td>`:''}
@@ -680,6 +694,7 @@ function toggleEdit(){
   if(editMode){ editMode=false; renderApp(); return; }
   requireUnlock(()=>{ editMode=true; renderApp(); });
 }
+function toggleIdeal(){ showIdeal=!showIdeal; renderApp(); }
 function setStock(idx,val){ const st=stockOf(prov().id);
   if(val===''||val===null) delete st[idx]; else st[idx]=Math.max(0,parseInt(val,10)||0);
   save(); renderApp(); }
@@ -733,19 +748,34 @@ function delProvider(){ if(data.providers.length<=1){alert('Tiene que quedar al 
   if(!confirm('¿Eliminar el proveedor '+prov().name+' y su lista?'))return;
   delete data.stock[prov().id]; data.providers.splice(current,1); current=0; editMode=false; save(); renderAll(); }
 function formatDateAR(iso){ const [y,m,d]=(iso||'').split('-'); return (d&&m&&y)?`${d}/${m}/${y}`:iso; }
-function buildOrderText(){ const p=prov(), st=stockOf(p.id); const lines=[];
+function buildOrderText(){ const p=prov(), st=stockOf(p.id); const rows=[];
   if(p.simple){
-    p.items.forEach(it=>{ const q=it.qty||0; if(q>0) lines.push(`${q}  ${it.name}${it.expiry?` — Vto: ${formatDateAR(it.expiry)}`:''}`); });
+    p.items.forEach(it=>{ const q=it.qty||0; if(q>0) rows.push({qty:q,name:it.name,expiry:it.expiry?formatDateAR(it.expiry):''}); });
   } else if(p.stockOnly){
-    p.items.forEach(it=>{ const v=(it.stock||'').trim(); if(v!=='') lines.push(`${v}  ${it.name}${it.expiry?` — Vto: ${it.expiry}`:''}`); });
+    p.items.forEach(it=>{ const v=(it.stock||'').trim(); if(v!=='') rows.push({qty:v,name:it.name,expiry:it.expiry||''}); });
   } else {
-    p.items.forEach((it,idx)=>{ const v=pedirVal(effIdeal(it,p),st[idx]); if(v>0) lines.push(`${v}  ${it.name}${it.expiry?` — Vto: ${it.expiry}`:''}`); });
+    p.items.forEach((it,idx)=>{ const v=pedirVal(effIdeal(it,p),st[idx]); if(v>0) rows.push({qty:v,name:it.name,expiry:it.expiry||''}); });
   }
-  const quien=p.employee?`\nPedido por: ${p.employee}`:'';
   const titulo=p.stockOnly?'STOCK':'PEDIDO';
-  const fecha=p.stockOnly&&p.stockDate?`\nAl: ${formatDateAR(p.stockDate)}`:'';
-  const vacio=p.stockOnly?'(sin stock cargado)':'(nada para pedir)';
-  return `${titulo} — ${p.name}${fecha}${quien}\n`+(lines.length?lines.join('\n'):vacio); }
+  const emoji=p.stockOnly?'📋':'🛒';
+  let out=`*${emoji} ${titulo} — ${p.name}*`;
+  if(p.stockOnly && p.stockDate) out+=`\n🗓️ Stock al: ${formatDateAR(p.stockDate)}`;
+  if(p.employee) out+=`\n👤 Pedido por: ${p.employee}`;
+  if(!rows.length){
+    out+=`\n\n_${p.stockOnly?'(sin stock cargado)':'(nada para pedir)'}_`;
+  } else {
+    rows.forEach(r=>{
+      out+=`\n• *${r.qty}* — ${r.name}`;
+      if(r.expiry) out+=`\n   📅 Vto: ${r.expiry}`;
+    });
+    if(p.stockOnly){
+      out+=`\n——————————\n*Productos con stock cargado: ${rows.length}*`;
+    } else {
+      const total=rows.reduce((s,r)=>s+r.qty,0);
+      out+=`\n——————————\n*Total a pedir: ${total}*`;
+    }
+  }
+  return out; }
 function copyOrder(){ const text=buildOrderText();
   navigator.clipboard.writeText(text).then(()=>toast('Pedido copiado'),()=>{
     const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();
