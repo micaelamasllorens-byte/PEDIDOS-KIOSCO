@@ -64,8 +64,9 @@
     background:var(--panel-2);border:1px solid var(--line);border-radius:9px;
     color:var(--ink);font-variant-numeric:tabular-nums;}
   input.expiry:focus{outline:none;border-color:var(--focus);background:#2b2519}
-  .checkrow{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;margin:-4px 0 14px;}
-  .modal input[type=checkbox]{width:auto;height:auto;margin:0}
+  .typegroup{margin:-4px 0 14px;display:flex;flex-direction:column;gap:6px}
+  .checkrow{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;}
+  .modal input[type=checkbox],.modal input[type=radio]{width:auto;height:auto;margin:0}
   .addrow{display:flex;gap:8px;margin:12px 4px 20px;}
   .addrow input{flex:1;height:44px;background:var(--panel-2);border:1px solid var(--line);
     border-radius:10px;color:var(--ink);padding:0 12px;font-size:15px;}
@@ -139,10 +140,11 @@
   <div class="modal">
     <h3>Nuevo proveedor</h3>
     <input id="provName" placeholder="Nombre del proveedor" maxlength="40">
-    <label class="checkrow">
-      <input type="checkbox" id="provSimple">
-      Pedido simple (cantidad y vencimiento, sin ideal/stock)
-    </label>
+    <div class="typegroup">
+      <label class="checkrow"><input type="radio" name="provType" value="ideal" checked> Con ideal y stock (clásico)</label>
+      <label class="checkrow"><input type="radio" name="provType" value="simple"> Pedido simple (cantidad + vencimiento)</label>
+      <label class="checkrow"><input type="radio" name="provType" value="stock"> Solo stock (sin ideal ni vencimiento)</label>
+    </div>
     <div class="row">
       <button class="btn ghost" style="flex:1" onclick="closeProvModal()">Cancelar</button>
       <button class="btn primary" style="flex:1" onclick="saveProv()">Crear</button>
@@ -273,6 +275,40 @@ function pepsicoProvider(){
     {name:'Twistos Jamón 95gr',ideal:6},{name:'Twistos Queso 95gr',ideal:6},
   ]};
 }
+function otrosSnacksProvider(){
+  return { id:'p_otrossnacks', name:'Otros snacks', simple:true, items:[
+    {name:'Palitos salados comunes',qty:0,expiry:''},
+    {name:'Palitos de jamón',qty:0,expiry:''},
+    {name:'Palitos de queso',qty:0,expiry:''},
+    {name:'Papas de cheddar',qty:0,expiry:''},
+    {name:'Papas de jamón',qty:0,expiry:''},
+    {name:'Papas de ketchup',qty:0,expiry:''},
+    {name:'Papas acanaladas',qty:0,expiry:''},
+    {name:'Saladix de pizza',qty:0,expiry:''},
+    {name:'Saladix de jamón',qty:0,expiry:''},
+    {name:'Saladix de cheddar',qty:0,expiry:''},
+    {name:'Kesitas caja',qty:0,expiry:''},
+    {name:'Rex caja',qty:0,expiry:''},
+    {name:'Kesitas paquete',qty:0,expiry:''},
+    {name:'Rex paquete',qty:0,expiry:''},
+    {name:'Maní king de queso',qty:0,expiry:''},
+    {name:'Maní croppers de jamón',qty:0,expiry:''},
+  ]};
+}
+function cigEconomicosProvider(){
+  return { id:'p_cigeco', name:'CIGARRILLOS ECONOMICOS', stockOnly:true, items:[
+    {name:'Golden común'},{name:'Golden box'},{name:'Golden suave box'},
+    {name:'Golden suave ks'},{name:'Golden exclusive'},{name:'Golden mentolado KS'},
+    {name:'Golden mentolado box'},{name:'Golden click one'},
+    {name:'Melbourne común'},{name:'Melbourne suave'},{name:'Melbourne mentolado'},{name:'Melbourne click'},
+    {name:'Red point KS'},{name:'Red Point 10'},{name:'Red Point box'},{name:'Red point click one'},
+    {name:'Red point click 10'},{name:'Red point SIX ON'},{name:'Red point ECO'},
+    {name:'Milenio red'},{name:'Milenio suave'},{name:'Milenio mint'},{name:'Milenio click'},
+    {name:'Milenio uva'},{name:'Milenio sandía'},
+    {name:'Kiel box'},{name:'Kiel ks'},
+    {name:'Dolchester'},{name:'Dolchester silver'},{name:'Master'},{name:'Mill'},{name:'Bold'},{name:'Mill convertible'},
+  ]};
+}
 const DANY_VARIANTS=[{key:'L',label:'Lunes'},{key:'M',label:'Miércoles'},{key:'V',label:'Viernes'}];
 function danyDefaultVariant(){
   const d=new Date().getDay(); // 0=dom,1=lun,2=mar,3=mie,4=jue,5=vie,6=sab
@@ -362,6 +398,8 @@ async function load(){
     migrated=true;
   }
   if(!data.providers.some(p=>p.id==='p_pepsico')){ data.providers.push(pepsicoProvider()); migrated=true; }
+  if(!data.providers.some(p=>p.id==='p_otrossnacks')){ data.providers.push(otrosSnacksProvider()); migrated=true; }
+  if(!data.providers.some(p=>p.id==='p_cigeco')){ data.providers.push(cigEconomicosProvider()); migrated=true; }
   const exampleIds=['p_ejemplo1','p_ejemplo2'];
   if(data.providers.some(p=>exampleIds.includes(p.id))){
     data.providers = data.providers.filter(p=>{
@@ -418,12 +456,15 @@ function renderApp(){
   let totalPedir=0, faltantes=0;
   if(p.simple){
     p.items.forEach(it=>{ const q=it.qty||0; if(q>0){totalPedir+=q;faltantes++;} });
+  } else if(p.stockOnly){
+    p.items.forEach((it,idx)=>{ const v=st[idx]||0; if(v>0){totalPedir+=v;faltantes++;} });
   } else {
     p.items.forEach((it,idx)=>{ const v=pedirVal(effIdeal(it,p),st[idx]); if(v>0){totalPedir+=v;faltantes++;} });
   }
+  const simpleLike=p.simple||p.stockOnly;
   let html=`
     <div class="toolbar"><div class="summary" style="flex:1">
-      <div class="stat pedir"><b>${totalPedir}</b><span>Total a pedir</span></div>
+      <div class="stat pedir"><b>${totalPedir}</b><span>${p.stockOnly?'Total en stock':'Total a pedir'}</span></div>
       <div class="stat"><b>${faltantes}</b><span>Productos</span></div>
       <div class="stat"><b>${p.items.length}</b><span>En lista</span></div>
     </div></div>
@@ -438,10 +479,34 @@ function renderApp(){
       </select>
     </div>
     <div class="toolbar">
-      <button class="editbtn ${editMode?'on':''}" onclick="toggleEdit()">${editMode?'Listo':(p.simple?'Editar lista':'Editar lista / ideales')}</button>
-      ${editMode?`<span class="hint">${p.simple?'Borrá o agregá productos':'Editá ideales, borrá o agregá productos'}</span>`:''}
+      <button class="editbtn ${editMode?'on':''}" onclick="toggleEdit()">${editMode?'Listo':(simpleLike?'Editar lista':'Editar lista / ideales')}</button>
+      ${editMode?`<span class="hint">${simpleLike?'Borrá o agregá productos':'Editá ideales, borrá o agregá productos'}</span>`:''}
     </div>`;
-  if(p.simple){
+  if(p.stockOnly){
+    html+=`<table><thead><tr>
+      <th class="prod">Producto</th><th class="colnum">Stock</th>
+      ${editMode?'<th class="th-x"></th>':''}
+    </tr></thead><tbody>`;
+    if(!p.items.length) html+=`<tr><td colspan="3"><div class="empty">Sin productos. Activá “Editar” y agregá.</div></td></tr>`;
+    p.items.forEach((it,idx)=>{
+      const have=st[idx]??'';
+      html+=`<tr>
+        <td class="prodname">${escapeHtml(it.name)}</td>
+        <td class="cellcenter"><input class="stock" type="number" inputmode="numeric" value="${have}" placeholder="0" onchange="setStock(${idx},this.value)"></td>
+        ${editMode?`<td class="cellcenter"><button class="rowdel" onclick="delItem(${idx})">✕</button></td>`:''}
+      </tr>`;
+    });
+    html+=`</tbody></table>`;
+    if(editMode){
+      html+=`<div class="addrow">
+          <input id="newItemName" placeholder="Nuevo producto">
+          <button class="btn primary" onclick="addItem()">Agregar</button>
+        </div>
+        <div class="addrow" style="margin-top:-8px">
+          <button class="btn ghost" style="flex:1" onclick="delProvider()">Eliminar este proveedor</button>
+        </div>`;
+    }
+  } else if(p.simple){
     html+=`<table><thead><tr>
       <th class="prod">Producto</th><th class="colnum">Cantidad</th>
       <th class="colwide">Vencimiento</th>
@@ -518,6 +583,7 @@ function setExpiry(idx,val){ const it=prov().items[idx]; it.expiry=val||''; save
 function addItem(){ const n=document.getElementById('newItemName').value.trim();
   if(!n) return;
   if(prov().simple){ prov().items.push({name:n,qty:0,expiry:''}); }
+  else if(prov().stockOnly){ prov().items.push({name:n}); }
   else { const id=parseInt(document.getElementById('newItemIdeal').value,10);
     prov().items.push({name:n,ideal:isNaN(id)?0:Math.max(0,id)}); }
   save(); renderApp(); }
@@ -534,12 +600,14 @@ function resetStock(){
   data.stock[prov().id]={}; save(); renderApp(); toast('Stock vaciado'); }
 function openProvModal(){ requireUnlock(()=>{
   document.getElementById('provName').value='';
-  document.getElementById('provSimple').checked=false;
+  const r=document.querySelector('input[name="provType"][value="ideal"]'); if(r) r.checked=true;
   document.getElementById('provModal').classList.add('show'); document.getElementById('provName').focus(); }); }
 function closeProvModal(){ document.getElementById('provModal').classList.remove('show'); }
 function saveProv(){ const n=document.getElementById('provName').value.trim(); if(!n)return;
-  const simple=document.getElementById('provSimple').checked;
-  data.providers.push({id:'p_'+Date.now(),name:n,items:[],simple}); current=data.providers.length-1;
+  const type=(document.querySelector('input[name="provType"]:checked')||{}).value||'ideal';
+  const newProv={id:'p_'+Date.now(),name:n,items:[]};
+  if(type==='simple') newProv.simple=true; else if(type==='stock') newProv.stockOnly=true;
+  data.providers.push(newProv); current=data.providers.length-1;
   closeProvModal(); editMode=true; save(); renderAll(); }
 function delProvider(){ if(data.providers.length<=1){alert('Tiene que quedar al menos un proveedor.');return;}
   if(!confirm('¿Eliminar el proveedor '+prov().name+' y su lista?'))return;
@@ -548,11 +616,15 @@ function formatDateAR(iso){ const [y,m,d]=(iso||'').split('-'); return (d&&m&&y)
 function buildOrderText(){ const p=prov(), st=stockOf(p.id); const lines=[];
   if(p.simple){
     p.items.forEach(it=>{ const q=it.qty||0; if(q>0) lines.push(`${q}  ${it.name}${it.expiry?` — Vto: ${formatDateAR(it.expiry)}`:''}`); });
+  } else if(p.stockOnly){
+    p.items.forEach((it,idx)=>{ const v=st[idx]; if(v!==undefined&&v!==null&&v!=='') lines.push(`${v}  ${it.name}`); });
   } else {
     p.items.forEach((it,idx)=>{ const v=pedirVal(effIdeal(it,p),st[idx]); if(v>0) lines.push(`${v}  ${it.name}`); });
   }
   const quien=p.employee?`\nPedido por: ${p.employee}`:'';
-  return `PEDIDO — ${p.name}${quien}\n`+(lines.length?lines.join('\n'):'(nada para pedir)'); }
+  const titulo=p.stockOnly?'STOCK':'PEDIDO';
+  const vacio=p.stockOnly?'(sin stock cargado)':'(nada para pedir)';
+  return `${titulo} — ${p.name}${quien}\n`+(lines.length?lines.join('\n'):vacio); }
 function copyOrder(){ const text=buildOrderText();
   navigator.clipboard.writeText(text).then(()=>toast('Pedido copiado'),()=>{
     const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();
