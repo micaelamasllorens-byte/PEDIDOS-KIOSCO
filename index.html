@@ -59,6 +59,14 @@
   .pedir.neg{background:var(--red);color:#fff}
   .rowdel{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;line-height:1;}
   .rowdel:hover{color:var(--red)}.th-x{width:34px}
+  .colwide{width:120px}
+  input.expiry{width:118px;height:40px;text-align:center;font-size:13px;color-scheme:dark;
+    background:var(--panel-2);border:1px solid var(--line);border-radius:9px;
+    color:var(--ink);font-variant-numeric:tabular-nums;}
+  input.expiry:focus{outline:none;border-color:var(--focus);background:#2b2519}
+  .typegroup{margin:-4px 0 14px;display:flex;flex-direction:column;gap:6px}
+  .checkrow{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;}
+  .modal input[type=checkbox],.modal input[type=radio]{width:auto;height:auto;margin:0}
   .addrow{display:flex;gap:8px;margin:12px 4px 20px;}
   .addrow input{flex:1;height:44px;background:var(--panel-2);border:1px solid var(--line);
     border-radius:10px;color:var(--ink);padding:0 12px;font-size:15px;}
@@ -132,6 +140,11 @@
   <div class="modal">
     <h3>Nuevo proveedor</h3>
     <input id="provName" placeholder="Nombre del proveedor" maxlength="40">
+    <div class="typegroup">
+      <label class="checkrow"><input type="radio" name="provType" value="ideal" checked> Con ideal y stock (clásico)</label>
+      <label class="checkrow"><input type="radio" name="provType" value="simple"> Pedido simple (cantidad + vencimiento)</label>
+      <label class="checkrow"><input type="radio" name="provType" value="stock"> Solo stock (sin ideal ni vencimiento)</label>
+    </div>
     <div class="row">
       <button class="btn ghost" style="flex:1" onclick="closeProvModal()">Cancelar</button>
       <button class="btn primary" style="flex:1" onclick="saveProv()">Crear</button>
@@ -262,6 +275,40 @@ function pepsicoProvider(){
     {name:'Twistos Jamón 95gr',ideal:6},{name:'Twistos Queso 95gr',ideal:6},
   ]};
 }
+function otrosSnacksProvider(){
+  return { id:'p_otrossnacks', name:'Otros snacks', simple:true, items:[
+    {name:'Palitos salados comunes',qty:0,expiry:''},
+    {name:'Palitos de jamón',qty:0,expiry:''},
+    {name:'Palitos de queso',qty:0,expiry:''},
+    {name:'Papas de cheddar',qty:0,expiry:''},
+    {name:'Papas de jamón',qty:0,expiry:''},
+    {name:'Papas de ketchup',qty:0,expiry:''},
+    {name:'Papas acanaladas',qty:0,expiry:''},
+    {name:'Saladix de pizza',qty:0,expiry:''},
+    {name:'Saladix de jamón',qty:0,expiry:''},
+    {name:'Saladix de cheddar',qty:0,expiry:''},
+    {name:'Kesitas caja',qty:0,expiry:''},
+    {name:'Rex caja',qty:0,expiry:''},
+    {name:'Kesitas paquete',qty:0,expiry:''},
+    {name:'Rex paquete',qty:0,expiry:''},
+    {name:'Maní king de queso',qty:0,expiry:''},
+    {name:'Maní croppers de jamón',qty:0,expiry:''},
+  ]};
+}
+function cigEconomicosProvider(){
+  return { id:'p_cigeco', name:'CIGARRILLOS ECONOMICOS', stockOnly:true, items:[
+    {name:'Golden común'},{name:'Golden box'},{name:'Golden suave box'},
+    {name:'Golden suave ks'},{name:'Golden exclusive'},{name:'Golden mentolado KS'},
+    {name:'Golden mentolado box'},{name:'Golden click one'},
+    {name:'Melbourne común'},{name:'Melbourne suave'},{name:'Melbourne mentolado'},{name:'Melbourne click'},
+    {name:'Red point KS'},{name:'Red Point 10'},{name:'Red Point box'},{name:'Red point click one'},
+    {name:'Red point click 10'},{name:'Red point SIX ON'},{name:'Red point ECO'},
+    {name:'Milenio red'},{name:'Milenio suave'},{name:'Milenio mint'},{name:'Milenio click'},
+    {name:'Milenio uva'},{name:'Milenio sandía'},
+    {name:'Kiel box'},{name:'Kiel ks'},
+    {name:'Dolchester'},{name:'Dolchester silver'},{name:'Master'},{name:'Mill'},{name:'Bold'},{name:'Mill convertible'},
+  ]};
+}
 const DANY_VARIANTS=[{key:'L',label:'Lunes'},{key:'M',label:'Miércoles'},{key:'V',label:'Viernes'}];
 function danyDefaultVariant(){
   const d=new Date().getDay(); // 0=dom,1=lun,2=mar,3=mie,4=jue,5=vie,6=sab
@@ -351,6 +398,8 @@ async function load(){
     migrated=true;
   }
   if(!data.providers.some(p=>p.id==='p_pepsico')){ data.providers.push(pepsicoProvider()); migrated=true; }
+  if(!data.providers.some(p=>p.id==='p_otrossnacks')){ data.providers.push(otrosSnacksProvider()); migrated=true; }
+  if(!data.providers.some(p=>p.id==='p_cigeco')){ data.providers.push(cigEconomicosProvider()); migrated=true; }
   const exampleIds=['p_ejemplo1','p_ejemplo2'];
   if(data.providers.some(p=>exampleIds.includes(p.id))){
     data.providers = data.providers.filter(p=>{
@@ -405,10 +454,17 @@ function renderApp(){
   const p=prov(), st=stockOf(p.id);
   const hasVariants=!!(p.variants&&p.variants.length);
   let totalPedir=0, faltantes=0;
-  p.items.forEach((it,idx)=>{ const v=pedirVal(effIdeal(it,p),st[idx]); if(v>0){totalPedir+=v;faltantes++;} });
+  if(p.simple){
+    p.items.forEach(it=>{ const q=it.qty||0; if(q>0){totalPedir+=q;faltantes++;} });
+  } else if(p.stockOnly){
+    p.items.forEach((it,idx)=>{ const v=st[idx]||0; if(v>0){totalPedir+=v;faltantes++;} });
+  } else {
+    p.items.forEach((it,idx)=>{ const v=pedirVal(effIdeal(it,p),st[idx]); if(v>0){totalPedir+=v;faltantes++;} });
+  }
+  const simpleLike=p.simple||p.stockOnly;
   let html=`
     <div class="toolbar"><div class="summary" style="flex:1">
-      <div class="stat pedir"><b>${totalPedir}</b><span>Total a pedir</span></div>
+      <div class="stat pedir"><b>${totalPedir}</b><span>${p.stockOnly?'Total en stock':'Total a pedir'}</span></div>
       <div class="stat"><b>${faltantes}</b><span>Productos</span></div>
       <div class="stat"><b>${p.items.length}</b><span>En lista</span></div>
     </div></div>
@@ -423,38 +479,90 @@ function renderApp(){
       </select>
     </div>
     <div class="toolbar">
-      <button class="editbtn ${editMode?'on':''}" onclick="toggleEdit()">${editMode?'Listo':'Editar lista / ideales'}</button>
-      ${editMode?'<span class="hint">Editá ideales, borrá o agregá productos</span>':''}
-    </div>
-    <table><thead><tr>
+      <button class="editbtn ${editMode?'on':''}" onclick="toggleEdit()">${editMode?'Listo':(simpleLike?'Editar lista':'Editar lista / ideales')}</button>
+      ${editMode?`<span class="hint">${simpleLike?'Borrá o agregá productos':'Editá ideales, borrá o agregá productos'}</span>`:''}
+    </div>`;
+  if(p.stockOnly){
+    html+=`<table><thead><tr>
+      <th class="prod">Producto</th><th class="colnum">Stock</th>
+      ${editMode?'<th class="th-x"></th>':''}
+    </tr></thead><tbody>`;
+    if(!p.items.length) html+=`<tr><td colspan="3"><div class="empty">Sin productos. Activá “Editar” y agregá.</div></td></tr>`;
+    p.items.forEach((it,idx)=>{
+      const have=st[idx]??'';
+      html+=`<tr>
+        <td class="prodname">${escapeHtml(it.name)}</td>
+        <td class="cellcenter"><input class="stock" type="number" inputmode="numeric" value="${have}" placeholder="0" onchange="setStock(${idx},this.value)"></td>
+        ${editMode?`<td class="cellcenter"><button class="rowdel" onclick="delItem(${idx})">✕</button></td>`:''}
+      </tr>`;
+    });
+    html+=`</tbody></table>`;
+    if(editMode){
+      html+=`<div class="addrow">
+          <input id="newItemName" placeholder="Nuevo producto">
+          <button class="btn primary" onclick="addItem()">Agregar</button>
+        </div>
+        <div class="addrow" style="margin-top:-8px">
+          <button class="btn ghost" style="flex:1" onclick="delProvider()">Eliminar este proveedor</button>
+        </div>`;
+    }
+  } else if(p.simple){
+    html+=`<table><thead><tr>
+      <th class="prod">Producto</th><th class="colnum">Cantidad</th>
+      <th class="colwide">Vencimiento</th>
+      ${editMode?'<th class="th-x"></th>':''}
+    </tr></thead><tbody>`;
+    if(!p.items.length) html+=`<tr><td colspan="4"><div class="empty">Sin productos. Activá “Editar” y agregá.</div></td></tr>`;
+    p.items.forEach((it,idx)=>{
+      const qty=it.qty||''; const exp=it.expiry||'';
+      html+=`<tr>
+        <td class="prodname">${escapeHtml(it.name)}</td>
+        <td class="cellcenter"><input class="stock" type="number" inputmode="numeric" value="${qty}" placeholder="0" onchange="setQty(${idx},this.value)"></td>
+        <td class="cellcenter"><input class="expiry" type="date" value="${exp}" onchange="setExpiry(${idx},this.value)"></td>
+        ${editMode?`<td class="cellcenter"><button class="rowdel" onclick="delItem(${idx})">✕</button></td>`:''}
+      </tr>`;
+    });
+    html+=`</tbody></table>`;
+    if(editMode){
+      html+=`<div class="addrow">
+          <input id="newItemName" placeholder="Nuevo producto">
+          <button class="btn primary" onclick="addItem()">Agregar</button>
+        </div>
+        <div class="addrow" style="margin-top:-8px">
+          <button class="btn ghost" style="flex:1" onclick="delProvider()">Eliminar este proveedor</button>
+        </div>`;
+    }
+  } else {
+    html+=`<table><thead><tr>
       <th class="prod">Producto</th><th class="colnum">Ideal</th>
       <th class="colnum">Hay</th><th class="colnum">Pedir</th>
       ${editMode?'<th class="th-x"></th>':''}
     </tr></thead><tbody>`;
-  if(!p.items.length) html+=`<tr><td colspan="5"><div class="empty">Sin productos. Activá “Editar” y agregá.</div></td></tr>`;
-  p.items.forEach((it,idx)=>{
-    const have=st[idx]??''; const ideal=effIdeal(it,p); const v=pedirVal(ideal,st[idx]);
-    const cls=v>0?'pos':(v===0?'zero':'neg');
-    html+=`<tr>
-      <td class="prodname">${escapeHtml(it.name)}</td>
-      <td class="cellcenter">${editMode
-        ?`<input class="idealedit" type="number" inputmode="numeric" value="${ideal}" onchange="setIdeal(${idx},this.value)">`
-        :`<span class="ideal">${ideal}</span>`}</td>
-      <td class="cellcenter"><input class="stock" type="number" inputmode="numeric" value="${have}" placeholder="0" onchange="setStock(${idx},this.value)"></td>
-      <td class="cellcenter"><span class="pedir ${cls}">${v}</span></td>
-      ${editMode?`<td class="cellcenter"><button class="rowdel" onclick="delItem(${idx})">✕</button></td>`:''}
-    </tr>`;
-  });
-  html+=`</tbody></table>`;
-  if(editMode){
-    html+=`<div class="addrow">
-        <input id="newItemName" placeholder="Nuevo producto">
-        <input id="newItemIdeal" class="small" type="number" inputmode="numeric" placeholder="Ideal">
-        <button class="btn primary" onclick="addItem()">Agregar</button>
-      </div>
-      <div class="addrow" style="margin-top:-8px">
-        <button class="btn ghost" style="flex:1" onclick="delProvider()">Eliminar este proveedor</button>
-      </div>`;
+    if(!p.items.length) html+=`<tr><td colspan="5"><div class="empty">Sin productos. Activá “Editar” y agregá.</div></td></tr>`;
+    p.items.forEach((it,idx)=>{
+      const have=st[idx]??''; const ideal=effIdeal(it,p); const v=pedirVal(ideal,st[idx]);
+      const cls=v>0?'pos':(v===0?'zero':'neg');
+      html+=`<tr>
+        <td class="prodname">${escapeHtml(it.name)}</td>
+        <td class="cellcenter">${editMode
+          ?`<input class="idealedit" type="number" inputmode="numeric" value="${ideal}" onchange="setIdeal(${idx},this.value)">`
+          :`<span class="ideal">${ideal}</span>`}</td>
+        <td class="cellcenter"><input class="stock" type="number" inputmode="numeric" value="${have}" placeholder="0" onchange="setStock(${idx},this.value)"></td>
+        <td class="cellcenter"><span class="pedir ${cls}">${v}</span></td>
+        ${editMode?`<td class="cellcenter"><button class="rowdel" onclick="delItem(${idx})">✕</button></td>`:''}
+      </tr>`;
+    });
+    html+=`</tbody></table>`;
+    if(editMode){
+      html+=`<div class="addrow">
+          <input id="newItemName" placeholder="Nuevo producto">
+          <input id="newItemIdeal" class="small" type="number" inputmode="numeric" placeholder="Ideal">
+          <button class="btn primary" onclick="addItem()">Agregar</button>
+        </div>
+        <div class="addrow" style="margin-top:-8px">
+          <button class="btn ghost" style="flex:1" onclick="delProvider()">Eliminar este proveedor</button>
+        </div>`;
+    }
   }
   document.getElementById('app').innerHTML=html;
 }
@@ -470,29 +578,53 @@ function setStock(idx,val){ const st=stockOf(prov().id);
   save(); renderApp(); }
 function setIdeal(idx,val){ const p=prov(), it=p.items[idx]; const v=Math.max(0,parseInt(val,10)||0);
   if(isVariant(it)) it.idealByVariant[p.activeVariant]=v; else it.ideal=v; save(); renderApp(); }
+function setQty(idx,val){ const it=prov().items[idx]; it.qty=Math.max(0,parseInt(val,10)||0); save(); renderApp(); }
+function setExpiry(idx,val){ const it=prov().items[idx]; it.expiry=val||''; save(); renderApp(); }
 function addItem(){ const n=document.getElementById('newItemName').value.trim();
-  const id=parseInt(document.getElementById('newItemIdeal').value,10);
-  if(!n) return; prov().items.push({name:n,ideal:isNaN(id)?0:Math.max(0,id)}); save(); renderApp(); }
+  if(!n) return;
+  if(prov().simple){ prov().items.push({name:n,qty:0,expiry:''}); }
+  else if(prov().stockOnly){ prov().items.push({name:n}); }
+  else { const id=parseInt(document.getElementById('newItemIdeal').value,10);
+    prov().items.push({name:n,ideal:isNaN(id)?0:Math.max(0,id)}); }
+  save(); renderApp(); }
 function delItem(idx){ prov().items.splice(idx,1);
   const st=stockOf(prov().id); const ns={};
   Object.keys(st).forEach(k=>{const ki=+k; if(ki<idx)ns[ki]=st[k]; else if(ki>idx)ns[ki-1]=st[k];});
   data.stock[prov().id]=ns; save(); renderApp(); }
-function resetStock(){ if(!confirm('¿Vaciar el stock cargado de '+prov().name+'?'))return;
+function resetStock(){
+  if(prov().simple){
+    if(!confirm('¿Vaciar las cantidades cargadas de '+prov().name+'?'))return;
+    prov().items.forEach(it=>{ it.qty=0; }); save(); renderApp(); toast('Cantidades vaciadas'); return;
+  }
+  if(!confirm('¿Vaciar el stock cargado de '+prov().name+'?'))return;
   data.stock[prov().id]={}; save(); renderApp(); toast('Stock vaciado'); }
 function openProvModal(){ requireUnlock(()=>{
   document.getElementById('provName').value='';
+  const r=document.querySelector('input[name="provType"][value="ideal"]'); if(r) r.checked=true;
   document.getElementById('provModal').classList.add('show'); document.getElementById('provName').focus(); }); }
 function closeProvModal(){ document.getElementById('provModal').classList.remove('show'); }
 function saveProv(){ const n=document.getElementById('provName').value.trim(); if(!n)return;
-  data.providers.push({id:'p_'+Date.now(),name:n,items:[]}); current=data.providers.length-1;
+  const type=(document.querySelector('input[name="provType"]:checked')||{}).value||'ideal';
+  const newProv={id:'p_'+Date.now(),name:n,items:[]};
+  if(type==='simple') newProv.simple=true; else if(type==='stock') newProv.stockOnly=true;
+  data.providers.push(newProv); current=data.providers.length-1;
   closeProvModal(); editMode=true; save(); renderAll(); }
 function delProvider(){ if(data.providers.length<=1){alert('Tiene que quedar al menos un proveedor.');return;}
   if(!confirm('¿Eliminar el proveedor '+prov().name+' y su lista?'))return;
   delete data.stock[prov().id]; data.providers.splice(current,1); current=0; editMode=false; save(); renderAll(); }
+function formatDateAR(iso){ const [y,m,d]=(iso||'').split('-'); return (d&&m&&y)?`${d}/${m}/${y}`:iso; }
 function buildOrderText(){ const p=prov(), st=stockOf(p.id); const lines=[];
-  p.items.forEach((it,idx)=>{ const v=pedirVal(effIdeal(it,p),st[idx]); if(v>0) lines.push(`${v}  ${it.name}`); });
+  if(p.simple){
+    p.items.forEach(it=>{ const q=it.qty||0; if(q>0) lines.push(`${q}  ${it.name}${it.expiry?` — Vto: ${formatDateAR(it.expiry)}`:''}`); });
+  } else if(p.stockOnly){
+    p.items.forEach((it,idx)=>{ const v=st[idx]; if(v!==undefined&&v!==null&&v!=='') lines.push(`${v}  ${it.name}`); });
+  } else {
+    p.items.forEach((it,idx)=>{ const v=pedirVal(effIdeal(it,p),st[idx]); if(v>0) lines.push(`${v}  ${it.name}`); });
+  }
   const quien=p.employee?`\nPedido por: ${p.employee}`:'';
-  return `PEDIDO — ${p.name}${quien}\n`+(lines.length?lines.join('\n'):'(nada para pedir)'); }
+  const titulo=p.stockOnly?'STOCK':'PEDIDO';
+  const vacio=p.stockOnly?'(sin stock cargado)':'(nada para pedir)';
+  return `${titulo} — ${p.name}${quien}\n`+(lines.length?lines.join('\n'):vacio); }
 function copyOrder(){ const text=buildOrderText();
   navigator.clipboard.writeText(text).then(()=>toast('Pedido copiado'),()=>{
     const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();
