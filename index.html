@@ -160,7 +160,7 @@
       <label class="checkrow"><input type="radio" name="provType" value="ideal" checked> Con ideal y stock (clásico)</label>
       <label class="checkrow"><input type="radio" name="provType" value="simple"> Pedido simple (cantidad + vencimiento)</label>
       <label class="checkrow"><input type="radio" name="provType" value="stock"> Solo stock (sin ideal)</label>
-      <label class="checkrow" style="padding-left:26px"><input type="checkbox" id="provStockExpiry"> Incluir vencimiento en "Solo stock"</label>
+      <label class="checkrow" style="padding-left:26px"><input type="checkbox" id="provWithExpiry"> Incluir columna de Vencimiento (Clásico o Solo stock)</label>
     </div>
     <div class="row">
       <button class="btn ghost" style="flex:1" onclick="closeProvModal()">Cancelar</button>
@@ -188,15 +188,17 @@
       <p>Esta app sirve para armar el pedido de mercadería a cada proveedor del kiosco, o simplemente anotar el stock que tenés cargado en un momento dado. Todo lo que cargás se guarda solo (mirá arriba a la derecha: dice "Guardando…" o "Guardado ✓") y se comparte automáticamente con quien más use la app.</p>
 
       <h4>1. Elegir un proveedor</h4>
-      <p>Arriba de todo hay botones, uno por proveedor (JOCKEY, YAFEMA, CASA DANY, etc). Tocá el que quieras cargar. El botón <b>"+ Proveedor"</b> crea uno nuevo (pide código PIN).</p>
+      <p>Arriba de todo hay un botón por cada proveedor que tengas cargado. Tocá el que quieras usar. El botón <b>"+ Proveedor"</b> crea uno nuevo (pide código PIN).</p>
 
       <h4>2. Los 3 tipos de lista</h4>
-      <p><b>• Clásica (Ideal / Hay / Pedir)</b> — Ej: JOCKEY, YAFEMA, CASA DANY, PEPSICO.<br>
+      <p><b>• Clásica (Ideal / Hay / Pedir)</b><br>
       <b>Ideal</b> es la cantidad que siempre deberías tener de ese producto. <b>Hay</b> es lo que contaste hoy en el kiosco (lo cargás vos). <b>Pedir</b> lo calcula la app sola (Ideal − Hay): en verde si hay que pedir, gris si está completo, rojo si tenés de más.</p>
-      <p><b>• Pedido simple (Cantidad + Vencimiento)</b> — Ej: Otros snacks.<br>
+      <p><b>• Pedido simple (Cantidad + Vencimiento)</b><br>
       No hay ideal ni stock: cargás directo cuánto querés pedir de cada producto y, si querés, la fecha de vencimiento.</p>
-      <p><b>• Solo stock</b> — Ej: CIGARRILLOS ECONOMICOS, ÓRENSE.<br>
-      No hay ideal ni "pedir": solo anotás el stock que tenés de cada producto. Podés escribir cualquier texto, no hace falta que sea un número ("5 cajas + 6 unidades" también sirve). Algunas listas (como ÓRENSE) además tienen columna de <b>Vencimiento</b>: si un producto tiene lotes con fechas distintas, escribilas juntas en el mismo campo (ej: "10/10/26 y 15/12/26"). También podés poner la fecha del conteo con "Stock al".</p>
+      <p><b>• Solo stock</b><br>
+      No hay ideal ni "pedir": solo anotás el stock que tenés de cada producto. Podés escribir cualquier texto, no hace falta que sea un número (por ejemplo "5 cajas + 6 unidades" también sirve). Además tiene un campo "Stock al" para poner la fecha del conteo.</p>
+      <p><b>• Vencimiento (opcional, en Clásica o Solo stock)</b><br>
+      Al crear el proveedor podés sumarle una columna de <b>Vencimiento</b>. Es un campo de texto libre: si un producto tiene lotes con fechas distintas, escribilas juntas en el mismo campo (ej: "10/10/26 y 15/12/26").</p>
 
       <h4>3. Botones de abajo</h4>
       <p><b>Vaciar stock</b>: borra lo que cargaste (Hay, Cantidad o Stock, según la lista) para volver a empezar de cero. Pide confirmación.<br>
@@ -315,7 +317,7 @@ function yafemaProvider(){
   ]};
 }
 function pepsicoProvider(){
-  return { id:'p_pepsico', name:'PEPSICO - Papas Lays', items:[
+  const items=[
     {name:'Lays clásicas 134gr',ideal:10},{name:'Lays clásicas 330gr',ideal:3},
     {name:'Lays clásicas 85gr',ideal:10},{name:'Lays clásicas 40gr',ideal:6},
     {name:'Lays panceta 77gr',ideal:4},{name:'Lays jamón serrano 77gr',ideal:4},
@@ -330,7 +332,8 @@ function pepsicoProvider(){
     {name:'Rueditas PEP 120gr',ideal:6},
     {name:'Maní Pehuamar 135gr',ideal:10},
     {name:'Twistos Jamón 95gr',ideal:6},{name:'Twistos Queso 95gr',ideal:6},
-  ]};
+  ].map(it=>({...it,expiry:''})); // vencimiento en blanco: admite varias fechas juntas si hay lotes distintos (ej: "10/10/26 y 15/12/26")
+  return { id:'p_pepsico', name:'PEPSICO - Papas Lays', withExpiry:true, items };
 }
 function otrosSnacksProvider(){
   return { id:'p_otrossnacks', name:'Otros snacks', simple:true, items:[
@@ -474,6 +477,8 @@ async function load(){
   if(!data.providers.some(p=>p.id==='p_pepsico')){ data.providers.push(pepsicoProvider()); migrated=true; }
   if(!data.providers.some(p=>p.id==='p_otrossnacks')){ data.providers.push(otrosSnacksProvider()); migrated=true; }
   if(!data.providers.some(p=>p.id==='p_cigeco')){ data.providers.push(cigEconomicosProvider()); migrated=true; }
+  let pepsico=data.providers.find(p=>p.id==='p_pepsico');
+  if(pepsico && !pepsico.withExpiry){ pepsico.withExpiry=true; migrated=true; }
   let orense=data.providers.find(p=>p.id==='p_orense');
   if(!orense){ data.providers.push(orenseProvider()); migrated=true; }
   else {
@@ -482,15 +487,16 @@ async function load(){
     if(bocaditos && bocaditos.name!=='Bocadictus'){ bocaditos.name='Bocadictus'; migrated=true; }
   }
   data.providers.forEach(p=>{ // migrar "solo stock" viejo (guardaba números en data.stock) a texto libre en cada item
-    if(!p.stockOnly) return;
-    const st=data.stock[p.id];
-    if(st && Object.keys(st).length){
-      p.items.forEach((it,idx)=>{ if(it.stock===undefined) it.stock=(st[idx]!==undefined&&st[idx]!==null)?String(st[idx]):''; });
-      delete data.stock[p.id]; migrated=true;
-    } else {
-      p.items.forEach(it=>{ if(it.stock===undefined){ it.stock=''; migrated=true; } });
+    if(p.stockOnly){
+      const st=data.stock[p.id];
+      if(st && Object.keys(st).length){
+        p.items.forEach((it,idx)=>{ if(it.stock===undefined) it.stock=(st[idx]!==undefined&&st[idx]!==null)?String(st[idx]):''; });
+        delete data.stock[p.id]; migrated=true;
+      } else {
+        p.items.forEach(it=>{ if(it.stock===undefined){ it.stock=''; migrated=true; } });
+      }
     }
-    if(p.withExpiry) p.items.forEach(it=>{ if(it.expiry===undefined){ it.expiry=''; migrated=true; } });
+    if(p.withExpiry) p.items.forEach(it=>{ if(it.expiry===undefined){ it.expiry=''; migrated=true; } }); // completa el campo vencimiento en listas que lo sumaron después de creadas
   });
   const exampleIds=['p_ejemplo1','p_ejemplo2'];
   if(data.providers.some(p=>exampleIds.includes(p.id))){
@@ -635,12 +641,13 @@ function renderApp(){
     html+=`<table><thead><tr>
       <th class="prod">Producto</th><th class="colnum">Ideal</th>
       <th class="colnum">Hay</th><th class="colnum">Pedir</th>
+      ${p.withExpiry?'<th class="colwide">Vencimiento</th>':''}
       ${editMode?'<th class="th-x"></th>':''}
     </tr></thead><tbody>`;
-    if(!p.items.length) html+=`<tr><td colspan="5"><div class="empty">Sin productos. Activá “Editar” y agregá.</div></td></tr>`;
+    if(!p.items.length) html+=`<tr><td colspan="${5+(p.withExpiry?1:0)}"><div class="empty">Sin productos. Activá “Editar” y agregá.</div></td></tr>`;
     p.items.forEach((it,idx)=>{
       const have=st[idx]??''; const ideal=effIdeal(it,p); const v=pedirVal(ideal,st[idx]);
-      const cls=v>0?'pos':(v===0?'zero':'neg');
+      const cls=v>0?'pos':(v===0?'zero':'neg'); const exp=it.expiry||'';
       html+=`<tr>
         <td class="prodname">${escapeHtml(it.name)}</td>
         <td class="cellcenter">${editMode
@@ -648,6 +655,7 @@ function renderApp(){
           :`<span class="ideal">${ideal}</span>`}</td>
         <td class="cellcenter"><input class="stock" type="number" inputmode="numeric" value="${have}" placeholder="0" onchange="setStock(${idx},this.value)"></td>
         <td class="cellcenter"><span class="pedir ${cls}">${v}</span></td>
+        ${p.withExpiry?`<td class="cellcenter"><input class="stocktext" type="text" value="${escapeHtml(exp)}" placeholder="ej: 10/10/26 y 15/12/26" onchange="setStockExpiry(${idx},this.value)"></td>`:''}
         ${editMode?`<td class="cellcenter"><button class="rowdel" onclick="delItem(${idx})">✕</button></td>`:''}
       </tr>`;
     });
@@ -687,7 +695,9 @@ function addItem(){ const n=document.getElementById('newItemName').value.trim();
   if(prov().simple){ prov().items.push({name:n,qty:0,expiry:''}); }
   else if(prov().stockOnly){ prov().items.push(prov().withExpiry?{name:n,stock:'',expiry:''}:{name:n,stock:''}); }
   else { const id=parseInt(document.getElementById('newItemIdeal').value,10);
-    prov().items.push({name:n,ideal:isNaN(id)?0:Math.max(0,id)}); }
+    const item={name:n,ideal:isNaN(id)?0:Math.max(0,id)};
+    if(prov().withExpiry) item.expiry='';
+    prov().items.push(item); }
   save(); renderApp(); }
 function delItem(idx){ prov().items.splice(idx,1);
   const st=stockOf(prov().id); const ns={};
@@ -707,15 +717,16 @@ function resetStock(){
 function openProvModal(){ requireUnlock(()=>{
   document.getElementById('provName').value='';
   const r=document.querySelector('input[name="provType"][value="ideal"]'); if(r) r.checked=true;
-  document.getElementById('provStockExpiry').checked=false;
+  document.getElementById('provWithExpiry').checked=false;
   document.getElementById('provModal').classList.add('show'); document.getElementById('provName').focus(); }); }
 function closeProvModal(){ document.getElementById('provModal').classList.remove('show'); }
 function saveProv(){ const n=document.getElementById('provName').value.trim(); if(!n)return;
   const type=(document.querySelector('input[name="provType"]:checked')||{}).value||'ideal';
   const newProv={id:'p_'+Date.now(),name:n,items:[]};
+  const withExp=document.getElementById('provWithExpiry').checked;
   if(type==='simple') newProv.simple=true;
-  else if(type==='stock'){ newProv.stockOnly=true;
-    if(document.getElementById('provStockExpiry').checked) newProv.withExpiry=true; }
+  else if(type==='stock'){ newProv.stockOnly=true; if(withExp) newProv.withExpiry=true; }
+  else if(withExp) newProv.withExpiry=true;
   data.providers.push(newProv); current=data.providers.length-1;
   closeProvModal(); editMode=true; save(); renderAll(); }
 function delProvider(){ if(data.providers.length<=1){alert('Tiene que quedar al menos un proveedor.');return;}
@@ -728,7 +739,7 @@ function buildOrderText(){ const p=prov(), st=stockOf(p.id); const lines=[];
   } else if(p.stockOnly){
     p.items.forEach(it=>{ const v=(it.stock||'').trim(); if(v!=='') lines.push(`${v}  ${it.name}${it.expiry?` — Vto: ${it.expiry}`:''}`); });
   } else {
-    p.items.forEach((it,idx)=>{ const v=pedirVal(effIdeal(it,p),st[idx]); if(v>0) lines.push(`${v}  ${it.name}`); });
+    p.items.forEach((it,idx)=>{ const v=pedirVal(effIdeal(it,p),st[idx]); if(v>0) lines.push(`${v}  ${it.name}${it.expiry?` — Vto: ${it.expiry}`:''}`); });
   }
   const quien=p.employee?`\nPedido por: ${p.employee}`:'';
   const titulo=p.stockOnly?'STOCK':'PEDIDO';
