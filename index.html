@@ -405,6 +405,28 @@ function orenseProvider(){
     {name:'Limón y Gin',stock:'3 cajas + 5 unid',expiry:''},
   ]};
 }
+function cocaColaProvider(){
+  return { id:'p_cocacola', name:'COCA-COLA', note:'Días de pedido: Domingo a Miércoles', items:[
+    {name:'Coca 500ML',ideal:4},{name:'Coca Zero 500ML',ideal:2},
+    {name:'Sprite 500ML',ideal:2},{name:'Fanta 500ML',ideal:1},
+    {name:'Coca 2lt x6',ideal:12},{name:'Coca 1,5lt x8',ideal:4},
+    {name:'Coca Zero 1,5lt x8',ideal:3},{name:'Coca Zero 2lt x6',ideal:6},
+    {name:'Fanta 2lt x6',ideal:1},{name:'Sprite 2lt x6',ideal:2},
+    {name:'Sprite 1,5lt x8',ideal:2},{name:'Sprite Zero 2lt x6',ideal:1},
+    {name:'Schweppes Tónica 1,5lt x6',ideal:2},{name:'Schweppes Pomelo 1,5lt x6',ideal:2},
+    {name:'Monster SA blanco 473ml x6',ideal:3},{name:'Monster Negro 473ml x6',ideal:5},
+    {name:'Monster Peachy Keen 473ml x6',ideal:3},{name:'Monster Mango 473ml x6',ideal:5},
+    {name:'Monster Pipeline Punch 473ml x6',ideal:3},{name:'Monster Pomelo (amarillo) 473ml x6',ideal:2},
+    {name:'Monster Ananá Reserve 473ml x6',ideal:3},{name:'Monster Sandía (Watermelon) 473ml x6',ideal:2},
+    {name:'Coca Vidrio 1lt x12',ideal:1},{name:'Lata Coca original x6',ideal:8},
+    {name:'Lata Sprite x6',ideal:2},{name:'Cepita Durazno 1 lt',ideal:2},
+    {name:'Cepita Naranja 1 lt',ideal:2},{name:'Ades Manzana x8',ideal:2},
+    {name:'Ades Multifruta x8',ideal:2},{name:'Aquarius 1,5lt Pomelo x6',ideal:2},
+    {name:'Aquarius 1,5lt Manzana x6',ideal:2},{name:'Aquarius 1,5lt Naranja x6',ideal:1},
+    {name:'Aquarius 1,5lt Pera x6',ideal:2},{name:'Aquarius 1,5lt Uva x6',ideal:2},
+    {name:'Benedictino 2250ml Con Gas x6',ideal:2},
+  ]};
+}
 const DANY_VARIANTS=[{key:'L',label:'Lunes'},{key:'M',label:'Miércoles'},{key:'V',label:'Viernes'}];
 function danyDefaultVariant(){
   const d=new Date().getDay(); // 0=dom,1=lun,2=mar,3=mie,4=jue,5=vie,6=sab
@@ -496,6 +518,7 @@ async function load(){
   if(!data.providers.some(p=>p.id==='p_pepsico')){ data.providers.push(pepsicoProvider()); migrated=true; }
   if(!data.providers.some(p=>p.id==='p_otrossnacks')){ data.providers.push(otrosSnacksProvider()); migrated=true; }
   if(!data.providers.some(p=>p.id==='p_cigeco')){ data.providers.push(cigEconomicosProvider()); migrated=true; }
+  if(!data.providers.some(p=>p.id==='p_cocacola')){ data.providers.push(cocaColaProvider()); migrated=true; }
   let pepsico=data.providers.find(p=>p.id==='p_pepsico');
   if(pepsico && !pepsico.withExpiry){ pepsico.withExpiry=true; migrated=true; }
   let orense=data.providers.find(p=>p.id==='p_orense');
@@ -587,6 +610,7 @@ function renderApp(){
   const idealVisible=!p.simple && !p.stockOnly && (showIdeal||editMode);
   let html=`
     <div class="typebadge ${typeClass}">${typeLabel}</div>
+    ${p.note?`<div class="toolbar"><span class="hint">📌 ${escapeHtml(p.note)}</span></div>`:''}
     <div class="toolbar"><div class="summary" style="flex:1">
       <div class="stat pedir"><b>${totalPedir}</b><span>${p.stockOnly?'Cargados':'Total a pedir'}</span></div>
       <div class="stat"><b>${faltantes}</b><span>${p.stockOnly?'Sin cargar':'Productos'}</span></div>
