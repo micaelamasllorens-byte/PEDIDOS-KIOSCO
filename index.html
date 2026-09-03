@@ -149,7 +149,8 @@
     <div class="typegroup">
       <label class="checkrow"><input type="radio" name="provType" value="ideal" checked> Con ideal y stock (clásico)</label>
       <label class="checkrow"><input type="radio" name="provType" value="simple"> Pedido simple (cantidad + vencimiento)</label>
-      <label class="checkrow"><input type="radio" name="provType" value="stock"> Solo stock (sin ideal ni vencimiento)</label>
+      <label class="checkrow"><input type="radio" name="provType" value="stock"> Solo stock (sin ideal)</label>
+      <label class="checkrow" style="padding-left:26px"><input type="checkbox" id="provStockExpiry"> Incluir vencimiento en "Solo stock"</label>
     </div>
     <div class="row">
       <button class="btn ghost" style="flex:1" onclick="closeProvModal()">Cancelar</button>
@@ -316,20 +317,20 @@ function cigEconomicosProvider(){
   ]};
 }
 function orenseProvider(){
-  return { id:'p_orense', name:'ÓRENSE', stockOnly:true, stockDate:'2026-09-01', items:[
-    {name:'Alfajor negro clásico',stock:'5 cajas + 6 unid'},
-    {name:'Alfajor blanco clásico',stock:'6 cajas + 4 unid'},
-    {name:'Alfajor mixto combinado',stock:''},
-    {name:'Alfajor negro Black 70%',stock:'5 cajas'},
-    {name:'Alfajor blanco Blanc 70%',stock:'6 cajas'},
-    {name:'Alfajor Mousse',stock:''},
-    {name:'Alfajor maicena',stock:'1 caja'},
-    {name:'Conito DDL negro',stock:'2 cajas'},
-    {name:'Bocaditos',stock:''},
-    {name:'MR bob blanco',stock:''},
-    {name:'Frutilla DDL',stock:'2 cajas + 5 unid'},
-    {name:'Frutilla crema',stock:'3 cajas + 3 unid'},
-    {name:'Limón y Gin',stock:'3 cajas + 5 unid'},
+  return { id:'p_orense', name:'ÓRENSE', stockOnly:true, withExpiry:true, stockDate:'2026-09-01', items:[
+    {name:'Alfajor negro clásico',stock:'5 cajas + 6 unid',expiry:''},
+    {name:'Alfajor blanco clásico',stock:'6 cajas + 4 unid',expiry:''},
+    {name:'Alfajor mixto combinado',stock:'',expiry:''},
+    {name:'Alfajor negro Black 70%',stock:'5 cajas',expiry:''},
+    {name:'Alfajor blanco Blanc 70%',stock:'6 cajas',expiry:''},
+    {name:'Alfajor Mousse',stock:'',expiry:''},
+    {name:'Alfajor maicena',stock:'1 caja',expiry:''},
+    {name:'Conito DDL negro',stock:'2 cajas',expiry:''},
+    {name:'Bocadictus',stock:'',expiry:''},
+    {name:'MR bob blanco',stock:'',expiry:''},
+    {name:'Frutilla DDL',stock:'2 cajas + 5 unid',expiry:''},
+    {name:'Frutilla crema',stock:'3 cajas + 3 unid',expiry:''},
+    {name:'Limón y Gin',stock:'3 cajas + 5 unid',expiry:''},
   ]};
 }
 const DANY_VARIANTS=[{key:'L',label:'Lunes'},{key:'M',label:'Miércoles'},{key:'V',label:'Viernes'}];
@@ -423,7 +424,13 @@ async function load(){
   if(!data.providers.some(p=>p.id==='p_pepsico')){ data.providers.push(pepsicoProvider()); migrated=true; }
   if(!data.providers.some(p=>p.id==='p_otrossnacks')){ data.providers.push(otrosSnacksProvider()); migrated=true; }
   if(!data.providers.some(p=>p.id==='p_cigeco')){ data.providers.push(cigEconomicosProvider()); migrated=true; }
-  if(!data.providers.some(p=>p.id==='p_orense')){ data.providers.push(orenseProvider()); migrated=true; }
+  let orense=data.providers.find(p=>p.id==='p_orense');
+  if(!orense){ data.providers.push(orenseProvider()); migrated=true; }
+  else {
+    if(!orense.withExpiry){ orense.withExpiry=true; migrated=true; }
+    const bocaditos=orense.items.find(it=>it.name==='Bocaditos'||it.name==='Bocaditus');
+    if(bocaditos && bocaditos.name!=='Bocadictus'){ bocaditos.name='Bocadictus'; migrated=true; }
+  }
   data.providers.forEach(p=>{ // migrar "solo stock" viejo (guardaba números en data.stock) a texto libre en cada item
     if(!p.stockOnly) return;
     const st=data.stock[p.id];
@@ -433,6 +440,7 @@ async function load(){
     } else {
       p.items.forEach(it=>{ if(it.stock===undefined){ it.stock=''; migrated=true; } });
     }
+    if(p.withExpiry) p.items.forEach(it=>{ if(it.expiry===undefined){ it.expiry=''; migrated=true; } });
   });
   const exampleIds=['p_ejemplo1','p_ejemplo2'];
   if(data.providers.some(p=>exampleIds.includes(p.id))){
@@ -524,14 +532,16 @@ function renderApp(){
   if(p.stockOnly){
     html+=`<table><thead><tr>
       <th class="prod">Producto</th><th class="colwide">Stock</th>
+      ${p.withExpiry?'<th class="colwide">Vencimiento</th>':''}
       ${editMode?'<th class="th-x"></th>':''}
     </tr></thead><tbody>`;
-    if(!p.items.length) html+=`<tr><td colspan="3"><div class="empty">Sin productos. Activá “Editar” y agregá.</div></td></tr>`;
+    if(!p.items.length) html+=`<tr><td colspan="${3+(p.withExpiry?1:0)}"><div class="empty">Sin productos. Activá “Editar” y agregá.</div></td></tr>`;
     p.items.forEach((it,idx)=>{
-      const have=it.stock||'';
+      const have=it.stock||''; const exp=it.expiry||'';
       html+=`<tr>
         <td class="prodname">${escapeHtml(it.name)}</td>
         <td class="cellcenter"><input class="stocktext" type="text" value="${escapeHtml(have)}" placeholder="ej: 5 cajas + 6 unid" onchange="setStockText(${idx},this.value)"></td>
+        ${p.withExpiry?`<td class="cellcenter"><input class="stocktext" type="text" value="${escapeHtml(exp)}" placeholder="ej: 10/10/26 y 15/12/26" onchange="setStockExpiry(${idx},this.value)"></td>`:''}
         ${editMode?`<td class="cellcenter"><button class="rowdel" onclick="delItem(${idx})">✕</button></td>`:''}
       </tr>`;
     });
@@ -620,11 +630,12 @@ function setIdeal(idx,val){ const p=prov(), it=p.items[idx]; const v=Math.max(0,
 function setQty(idx,val){ const it=prov().items[idx]; it.qty=Math.max(0,parseInt(val,10)||0); save(); renderApp(); }
 function setExpiry(idx,val){ const it=prov().items[idx]; it.expiry=val||''; save(); renderApp(); }
 function setStockText(idx,val){ const it=prov().items[idx]; it.stock=(val||'').trim(); save(); renderApp(); }
+function setStockExpiry(idx,val){ const it=prov().items[idx]; it.expiry=(val||'').trim(); save(); renderApp(); }
 function setStockDate(val){ prov().stockDate=val||''; save(); renderApp(); }
 function addItem(){ const n=document.getElementById('newItemName').value.trim();
   if(!n) return;
   if(prov().simple){ prov().items.push({name:n,qty:0,expiry:''}); }
-  else if(prov().stockOnly){ prov().items.push({name:n,stock:''}); }
+  else if(prov().stockOnly){ prov().items.push(prov().withExpiry?{name:n,stock:'',expiry:''}:{name:n,stock:''}); }
   else { const id=parseInt(document.getElementById('newItemIdeal').value,10);
     prov().items.push({name:n,ideal:isNaN(id)?0:Math.max(0,id)}); }
   save(); renderApp(); }
@@ -646,12 +657,15 @@ function resetStock(){
 function openProvModal(){ requireUnlock(()=>{
   document.getElementById('provName').value='';
   const r=document.querySelector('input[name="provType"][value="ideal"]'); if(r) r.checked=true;
+  document.getElementById('provStockExpiry').checked=false;
   document.getElementById('provModal').classList.add('show'); document.getElementById('provName').focus(); }); }
 function closeProvModal(){ document.getElementById('provModal').classList.remove('show'); }
 function saveProv(){ const n=document.getElementById('provName').value.trim(); if(!n)return;
   const type=(document.querySelector('input[name="provType"]:checked')||{}).value||'ideal';
   const newProv={id:'p_'+Date.now(),name:n,items:[]};
-  if(type==='simple') newProv.simple=true; else if(type==='stock') newProv.stockOnly=true;
+  if(type==='simple') newProv.simple=true;
+  else if(type==='stock'){ newProv.stockOnly=true;
+    if(document.getElementById('provStockExpiry').checked) newProv.withExpiry=true; }
   data.providers.push(newProv); current=data.providers.length-1;
   closeProvModal(); editMode=true; save(); renderAll(); }
 function delProvider(){ if(data.providers.length<=1){alert('Tiene que quedar al menos un proveedor.');return;}
@@ -662,7 +676,7 @@ function buildOrderText(){ const p=prov(), st=stockOf(p.id); const lines=[];
   if(p.simple){
     p.items.forEach(it=>{ const q=it.qty||0; if(q>0) lines.push(`${q}  ${it.name}${it.expiry?` — Vto: ${formatDateAR(it.expiry)}`:''}`); });
   } else if(p.stockOnly){
-    p.items.forEach(it=>{ const v=(it.stock||'').trim(); if(v!=='') lines.push(`${v}  ${it.name}`); });
+    p.items.forEach(it=>{ const v=(it.stock||'').trim(); if(v!=='') lines.push(`${v}  ${it.name}${it.expiry?` — Vto: ${it.expiry}`:''}`); });
   } else {
     p.items.forEach((it,idx)=>{ const v=pedirVal(effIdeal(it,p),st[idx]); if(v>0) lines.push(`${v}  ${it.name}`); });
   }
