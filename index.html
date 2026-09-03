@@ -95,6 +95,7 @@
     padding:12px;display:flex;flex-direction:column;gap:8px;backdrop-filter:blur(6px);}
   .barrow{display:flex;gap:10px}
   .bar .btn{flex:1}
+  .iconbtn{flex:0 0 48px!important;font-size:20px;padding:0}
   .editbtn{background:none;border:1px solid var(--line);color:var(--muted);
     border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer}
   .editbtn.on{background:var(--amber);color:var(--amber-ink);border-color:var(--amber)}
@@ -148,12 +149,11 @@
 
 <div class="bar">
   <div class="barrow">
-    <button class="btn ghost" onclick="resetStock()">Vaciar stock</button>
-    <button class="btn primary" onclick="copyOrder()">Copiar pedido</button>
+    <button class="btn ghost iconbtn" onclick="resetStock()" title="Vaciar stock" aria-label="Vaciar stock">🗑️</button>
+    <button class="btn primary" style="flex:1" onclick="copyOrder()">Copiar pedido</button>
   </div>
   <div class="barrow">
-    <button class="btn whatsapp" onclick="sendWhatsApp(ARI_PHONE)">💬 Enviar a Ari</button>
-    <button class="btn whatsapp" onclick="sendWhatsApp(MICA_PHONE)">💬 Enviar a Mica</button>
+    <button class="btn whatsapp" style="flex:1" onclick="openSendModal()">💬 Enviar pedido</button>
   </div>
 </div>
 
@@ -186,6 +186,19 @@
   </div>
 </div>
 
+<div class="modal-bg" id="sendModal">
+  <div class="modal">
+    <h3>¿A quién enviar el pedido?</h3>
+    <div class="row">
+      <button class="btn whatsapp" style="flex:1" onclick="sendWhatsApp(ARI_PHONE);closeSendModal()">💬 Ari</button>
+      <button class="btn whatsapp" style="flex:1" onclick="sendWhatsApp(MICA_PHONE);closeSendModal()">💬 Mica</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn ghost" style="flex:1" onclick="closeSendModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="helpModal">
   <div class="modal wide">
     <h3>Cómo usar esta app</h3>
@@ -207,9 +220,9 @@
       Al crear el proveedor podés sumarle una columna de <b>Vencimiento</b>. Es un campo de texto libre: si un producto tiene lotes con fechas distintas, escribilas juntas en el mismo campo (ej: "10/10/26 y 15/12/26").</p>
 
       <h4>3. Botones de abajo</h4>
-      <p><b>Vaciar stock</b>: borra lo que cargaste (Hay, Cantidad o Stock, según la lista) para volver a empezar de cero. Pide confirmación.<br>
+      <p><b>🗑️</b> (icono chico): vacía lo que cargaste (Hay, Cantidad o Stock, según la lista) para volver a empezar de cero. Pide confirmación.<br>
       <b>Copiar pedido</b>: copia el texto del pedido/stock, ya prolijo y con emojis, para pegarlo donde quieras.<br>
-      <b>Enviar a Ari / Enviar a Mica</b>: abre WhatsApp con ese mismo texto ya armado, listo para mandar.</p>
+      <b>Enviar pedido</b>: te pregunta a quién mandárselo (Ari o Mica) y abre WhatsApp con ese texto ya armado, listo para mandar.</p>
 
       <h4>4. "Pedido por"</h4>
       <p>Elegí en el desplegable quién está haciendo el pedido. Queda guardado en esa lista y aparece en el texto del pedido.</p>
@@ -783,6 +796,8 @@ function copyOrder(){ const text=buildOrderText();
 const ARI_PHONE='5491167958267', MICA_PHONE='5492241491822';
 function sendWhatsApp(phone){ const text=buildOrderText();
   window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(text), '_blank'); }
+function openSendModal(){ document.getElementById('sendModal').classList.add('show'); }
+function closeSendModal(){ document.getElementById('sendModal').classList.remove('show'); }
 function escapeHtml(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 let toastT; function toast(msg,bad){ const t=document.getElementById('toast');t.textContent=msg;
   t.className='toast show'+(bad?' bad':'');clearTimeout(toastT);toastT=setTimeout(()=>t.className='toast'+(bad?' bad':''),1600); }
