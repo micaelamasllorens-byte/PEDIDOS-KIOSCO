@@ -54,6 +54,8 @@
   thead th.prod{text-align:left;padding-left:10px}
   tbody td{border-top:1px solid var(--line);padding:6px 4px;vertical-align:middle}
   .prodname{font-size:14px;padding-left:10px;line-height:1.2;}
+  tr.cathead td{background:var(--panel-2);color:var(--amber);font-weight:800;font-size:11px;
+    text-transform:uppercase;letter-spacing:.6px;padding:9px 10px 7px;border-top:2px solid var(--line);}
   .colnum{width:74px}.cellcenter{text-align:center}
   .ideal{color:var(--muted);font-size:15px;text-align:center;font-variant-numeric:tabular-nums}
   input.stock{width:56px;height:40px;text-align:center;font-size:17px;
@@ -423,6 +425,74 @@ function cocaColaProvider(){
     {name:'Benedictino 2250ml Con Gas x6',ideal:2},
   ]};
 }
+function productosDisplayProvider(){
+  const items=[
+    {name:'Conito Orense Negro 6 Unidades',category:'Alfajores y conos'},
+    {name:'Caja Alfajores Guaymallén Triple 24 Unidades (Negro, Blanco)',category:'Alfajores y conos'},
+    {name:'Caja Alfajores Guaymallén Simple 40 Unidades',category:'Alfajores y conos'},
+    {name:'Turrón Misky 50 x 25 g',category:'Turrones'},
+    {name:'Caramelos Arcor Menta Cristal 810 g',category:'Caramelos'},
+    {name:'Caramelos Butter Toffees Dulce De Leche 822 g',category:'Caramelos'},
+    {name:'Caramelos Arcor De Menta Chocolate 715 g',category:'Caramelos'},
+    {name:"Caramelos Duros Butter Toffees Butter'N Cream 675 g",category:'Caramelos'},
+    {name:'Caramelos Arcor De Miel 675 g',category:'Caramelos'},
+    {name:'Bolsa Caramelos Palitos De La Selva 600 g',category:'Caramelos'},
+    {name:'Caramelos Arcor Mogul Palotes Masticables Uva & Tutti 496 g',category:'Caramelos'},
+    {name:'Caramelos Arcor Mogul Palotes Masticables Limón Y Sandía 496 g',category:'Caramelos'},
+    {name:'Caramelos Arcor Fresh Cristal 405 g',category:'Caramelos'},
+    {name:'Caramelos Flynn Paff De Tutti Frutti 560 g',category:'Caramelos'},
+    {name:'Caramelos Flynn Paff De Uva 560 g',category:'Caramelos'},
+    {name:'Caramelos Masticable Misky Surtidos 800 g',category:'Caramelos'},
+    {name:'Caramelos Sugus Masticables 700 g',category:'Caramelos'},
+    {name:'Caramelos Arcor Relleno Miel Y Menta 335 g',category:'Caramelos'},
+    {name:'Caramelos Arcor Gajos Frutales 485 g',category:'Caramelos'},
+    {name:'Caramelos Lipo Súper Ácidos 454 g 64 Unidades',category:'Caramelos'},
+    {name:'Chupetin Pico Dulce 48 Unidades',category:'Chupetines'},
+    {name:'Chupetin Mister Pops Frutal 625 g',category:'Chupetines'},
+    {name:'Bolsa De Chupetin Mister Pops Duo Extreme 24 Unidades',category:'Chupetines'},
+    {name:'Chupetines Mister Pops Caramelo Chicle Globo Cereza 432 g',category:'Chupetines'},
+    {name:'Chupetin Mister Pops Evolution Blueberry 432 g',category:'Chupetines'},
+    {name:'Chupetin Mister Pops Evolution Pinta Lengua Uva Tutti Frutti 24 Unidades',category:'Chupetines'},
+    {name:'Bocadito Dos Corazones 20 Unidades 26 g',category:'Bombones y chocolates'},
+    {name:'Bombones Bon O Bon Dubai Lata 10 Unidades',category:'Bombones y chocolates'},
+    {name:'Bombones Bon O Bon Dubai 297 g',category:'Bombones y chocolates'},
+    {name:'Bombones Arcor Selección En Casa 228 g',category:'Bombones y chocolates'},
+    {name:'Bombones Arcor Bon O Bon Surtidos Caja 255 g',category:'Bombones y chocolates'},
+    {name:'Bombón Arcor El Kiosco En Casa 246 g',category:'Bombones y chocolates'},
+    {name:'Bombón Milka Chocolate Con Leche Y Oreo 19 g 13 Unidades',category:'Bombones y chocolates'},
+    {name:'Chocolate Kinder 50 g',category:'Bombones y chocolates'},
+    {name:'Bombones Mogul De Fruta 500 g',category:'Bombones y chocolates'},
+    {name:'Bombón Escocés Bon O Bon 6 Unidades',category:'Bombones y chocolates'},
+    {name:'Felfort Bombón Bocadito de Marroc',category:'Bombones y chocolates'},
+    {name:'Gomitas Misky Surtidas Fantasía 1 kg',category:'Gomitas'},
+    {name:'Gomitas Eucalipto Billiken',category:'Gomitas'},
+    {name:'Misky Gomas Eucalipto 1 kg',category:'Gomitas'},
+    {name:'Misky Gomitas Jelly Roll 1 kg',category:'Gomitas'},
+    {name:'Billiken Gomitas Eucalipto Bolsa 800 g',category:'Gomitas'},
+    {name:'Barrita Helada Águila Pistacho 6 Unidades',category:'Helados'},
+    {name:'Helado Palito Bombón Arcor Crema Americana Y Chocolate 18 Unidades',category:'Helados'},
+    {name:'Habanos King Edward Imperial 5 Unidades',category:'Habanos y cigarrillos'},
+    {name:'Habano Phillies Titan 5 Unidades',category:'Habanos y cigarrillos'},
+    {name:'Phillies Blunt Chocolate 5 Unidades',category:'Habanos y cigarrillos'},
+    {name:'Habano Phillies Blunt 5 Unidades',category:'Habanos y cigarrillos'},
+    {name:'Habanos Phillies Blunt Honey 5 Unidades',category:'Habanos y cigarrillos'},
+    {name:'Cigarrillos Harvest Vainilla 10 Unidades',category:'Habanos y cigarrillos'},
+    {name:'Espirales Para Mosquitos Raid Verdes 12 Unidades',category:'Insecticidas'},
+    {name:'Insecticida Raid Repele Mosquitos Country Fresh en Espiral 12 Unidades',category:'Insecticidas'},
+    {name:'Tenedor Grande Blanco 50 Unidades',category:'Descartables'},
+    {name:'Cuchillo Grande Descartable Strawplast 50 Unidades',category:'Descartables'},
+    {name:'Pañuelos Descartables Elite Triple Hoja 6 x 10 Unidades',category:'Descartables'},
+    {name:'Resma Ledesma Autor A4 500 Hojas 80 g',category:'Papelería y útiles'},
+    {name:'Resma Punax A4 (21 x 29.7 cm) 500 Hojas',category:'Papelería y útiles'},
+    {name:'Témperas Tintoretto 10 Unidades',category:'Papelería y útiles'},
+    {name:'Témperas Playcolor Caja x 10 Surtidas',category:'Papelería y útiles'},
+    {name:'Témperas Señorita Uso Escolar 10 Unidades',category:'Papelería y útiles'},
+    {name:'Sopa Deshidratada Knorr Quick Vegetales 59.5 g 5 Unidades',category:'Sopas deshidratadas'},
+    {name:'Sopa Deshidratada Knorr Quick Choclo 63 g 5 Unidades',category:'Sopas deshidratadas'},
+    {name:'Sopa Deshidratada Knorr Quick Zapallo Romero Y Pimienta 63 g 5 Unidades',category:'Sopas deshidratadas'},
+  ].map(it=>({...it,stock:''}));
+  return { id:'p_display', name:'Productos por Display', stockOnly:true, items };
+}
 const DANY_VARIANTS=[{key:'L',label:'Lunes'},{key:'M',label:'Miércoles'},{key:'V',label:'Viernes'}];
 function danyDefaultVariant(){
   const d=new Date().getDay(); // 0=dom,1=lun,2=mar,3=mie,4=jue,5=vie,6=sab
@@ -515,6 +585,7 @@ async function load(){
   if(!data.providers.some(p=>p.id==='p_otrossnacks')){ data.providers.push(otrosSnacksProvider()); migrated=true; }
   if(!data.providers.some(p=>p.id==='p_cigeco')){ data.providers.push(cigEconomicosProvider()); migrated=true; }
   if(!data.providers.some(p=>p.id==='p_cocacola')){ data.providers.push(cocaColaProvider()); migrated=true; }
+  if(!data.providers.some(p=>p.id==='p_display')){ data.providers.push(productosDisplayProvider()); migrated=true; }
   let pepsico=data.providers.find(p=>p.id==='p_pepsico');
   if(pepsico && !pepsico.withExpiry){ pepsico.withExpiry=true; migrated=true; }
   let orense=data.providers.find(p=>p.id==='p_orense');
@@ -637,8 +708,14 @@ function renderApp(){
       ${p.withExpiry?'<th class="colwide">📅 Vencimiento</th>':''}
       ${editMode?'<th class="th-x"></th>':''}
     </tr></thead><tbody>`;
-    if(!p.items.length) html+=`<tr><td colspan="${3+(p.withExpiry?1:0)}"><div class="empty">Sin productos. Activá “Editar” y agregá.</div></td></tr>`;
+    const stockColCount=3+(p.withExpiry?1:0);
+    if(!p.items.length) html+=`<tr><td colspan="${stockColCount}"><div class="empty">Sin productos. Activá “Editar” y agregá.</div></td></tr>`;
+    let lastCat=null;
     p.items.forEach((it,idx)=>{
+      if(it.category && it.category!==lastCat){
+        lastCat=it.category;
+        html+=`<tr class="cathead"><td colspan="${stockColCount}">${escapeHtml(lastCat)}</td></tr>`;
+      }
       const have=it.stock||''; const exp=it.expiry||'';
       html+=`<tr>
         <td class="prodname">${escapeHtml(it.name)}</td>
