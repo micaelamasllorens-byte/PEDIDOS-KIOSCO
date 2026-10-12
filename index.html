@@ -523,6 +523,33 @@ function electronicaProvider(){
   ];
   return { id:'p_electronica', name:'Electrónica', stockOnly:true, stockDate:'2026-10-12', items };
 }
+function alcoholProvider(){
+  const items=[
+    {name:'Gancia Clásico',stock:'10',category:'Aperitivos'},
+    {name:'Gancia Edición Especial',stock:'11',category:'Aperitivos'},
+    {name:'Fernet 750ml',stock:'18',category:'Aperitivos'},
+    {name:'Vino Tinto Quara',stock:'10',category:'Vinos'},
+    {name:'Vino Tinto Otro Loco Más',stock:'5',category:'Vinos'},
+    {name:'Vino Tinto Hormiga Negra',stock:'12',category:'Vinos'},
+    {name:'Federico Alvear Extra Dulce',stock:'13',category:'Vinos'},
+    {name:'Cosecha Tardía Dulce Blanco',stock:'2',category:'Vinos'},
+    {name:'Smirnoff Clásico',stock:'8',category:'Vodka y gin'},
+    {name:'Smirnoff Raspberry',stock:'4',category:'Vodka y gin'},
+    {name:'Gin Merle',stock:'4',category:'Vodka y gin'},
+    {name:'Quilmes 473ml',stock:'86',category:'Cervezas'},
+    {name:'Heineken 473ml',stock:'59',category:'Cervezas'},
+    {name:'Schneider 473ml',stock:'72',category:'Cervezas'},
+    {name:'Isenbeck 473ml',stock:'67',category:'Cervezas'},
+    {name:'Quilmes IPA 473ml',stock:'20',category:'Cervezas'},
+    {name:'Imperial IPA 473ml',stock:'4',category:'Cervezas'},
+    {name:'Andes Rubia 473ml',stock:'31',category:'Cervezas'},
+    {name:'Brahma 473ml',stock:'31',category:'Cervezas'},
+    {name:'Stella Artois 473ml',stock:'17',category:'Cervezas'},
+    {name:'Schneider 710ml',stock:'28',category:'Cervezas'},
+    {name:'Heineken 710ml',stock:'23',category:'Cervezas'},
+  ];
+  return { id:'p_alcohol', name:'Alcohol', stockOnly:true, stockDate:'2026-10-12', items };
+}
 const DANY_VARIANTS=[{key:'L',label:'Lunes'},{key:'M',label:'Miércoles'},{key:'V',label:'Viernes'}];
 function danyDefaultVariant(){
   const d=new Date().getDay(); // 0=dom,1=lun,2=mar,3=mie,4=jue,5=vie,6=sab
@@ -617,6 +644,7 @@ async function load(){
   if(!data.providers.some(p=>p.id==='p_cocacola')){ data.providers.push(cocaColaProvider()); migrated=true; }
   if(!data.providers.some(p=>p.id==='p_display')){ data.providers.push(productosDisplayProvider()); migrated=true; }
   if(!data.providers.some(p=>p.id==='p_electronica')){ data.providers.push(electronicaProvider()); migrated=true; }
+  if(!data.providers.some(p=>p.id==='p_alcohol')){ data.providers.push(alcoholProvider()); migrated=true; }
   let pepsico=data.providers.find(p=>p.id==='p_pepsico');
   if(pepsico && !pepsico.withExpiry){ pepsico.withExpiry=true; migrated=true; }
   let orense=data.providers.find(p=>p.id==='p_orense');
