@@ -493,6 +493,36 @@ function productosDisplayProvider(){
   ].map(it=>({...it,stock:''}));
   return { id:'p_display', name:'Productos por Display', stockOnly:true, items };
 }
+function electronicaProvider(){
+  const items=[
+    {name:'A6S Bluetooth',stock:'18',category:'Auriculares'},
+    {name:'Lighting-iPhone',stock:'9',category:'Auriculares'},
+    {name:'Motorola tipo c',stock:'3',category:'Auriculares'},
+    {name:'Comunes ROYALCELL',stock:'12',category:'Auriculares'},
+    {name:'Auriculares inalámbricos Bluetooth V5.3 H628bt plegable negro havit',stock:'0',category:'Auriculares'},
+    {name:'Tipo c-c',stock:'62',category:'Cables y cargadores'},
+    {name:'iPhone usb-lighting',stock:'40',category:'Cables y cargadores'},
+    {name:'Samsung tipo c-usb',stock:'5',category:'Cables y cargadores'},
+    {name:'MagSafe',stock:'9',category:'Cables y cargadores'},
+    {name:'Kosmo 2.A',stock:'2',category:'Cables y cargadores'},
+    {name:'Kosmo 2.75',stock:'1',category:'Cables y cargadores'},
+    {name:'Cabezal tipo c',stock:'22',category:'Cables y cargadores'},
+    {name:'Legatus usb-tipo c 3.4A',stock:'5',category:'Cables y cargadores'},
+    {name:'Cable iPhone-tipo c',stock:'0',category:'Cables y cargadores'},
+    {name:'Cargador de auto KOSMO 2usb 4.2 12V',stock:'8',category:'Cables y cargadores'},
+    {name:'Cargador de auto KOSMO 3usb 12V 3.3',stock:'9',category:'Cables y cargadores'},
+    {name:'Batidor de café',stock:'5',category:'Otros electrónicos'},
+    {name:'Balanzas de bolsillo',stock:'5',category:'Otros electrónicos'},
+    {name:'Adaptador internacional',stock:'7',category:'Otros electrónicos'},
+    {name:'Calculadoras KENKO 12 dígitos',stock:'8',category:'Otros electrónicos'},
+    {name:'Nebulizadores MESH',stock:'20',category:'Otros electrónicos'},
+    {name:'Mouse HAVIT Ms57gt',stock:'4',category:'Otros electrónicos'},
+    {name:'Calculadoras científicas',stock:'10',category:'Otros electrónicos'},
+    {name:'Linternas',stock:'23',category:'Otros electrónicos'},
+    {name:'Flameadores candela',stock:'',category:'Otros electrónicos'},
+  ];
+  return { id:'p_electronica', name:'Electrónica', stockOnly:true, stockDate:'2026-10-12', items };
+}
 const DANY_VARIANTS=[{key:'L',label:'Lunes'},{key:'M',label:'Miércoles'},{key:'V',label:'Viernes'}];
 function danyDefaultVariant(){
   const d=new Date().getDay(); // 0=dom,1=lun,2=mar,3=mie,4=jue,5=vie,6=sab
@@ -586,6 +616,7 @@ async function load(){
   if(!data.providers.some(p=>p.id==='p_cigeco')){ data.providers.push(cigEconomicosProvider()); migrated=true; }
   if(!data.providers.some(p=>p.id==='p_cocacola')){ data.providers.push(cocaColaProvider()); migrated=true; }
   if(!data.providers.some(p=>p.id==='p_display')){ data.providers.push(productosDisplayProvider()); migrated=true; }
+  if(!data.providers.some(p=>p.id==='p_electronica')){ data.providers.push(electronicaProvider()); migrated=true; }
   let pepsico=data.providers.find(p=>p.id==='p_pepsico');
   if(pepsico && !pepsico.withExpiry){ pepsico.withExpiry=true; migrated=true; }
   let orense=data.providers.find(p=>p.id==='p_orense');
