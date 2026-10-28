@@ -383,7 +383,8 @@ function cigEconomicosProvider(){
     {name:'Milenio red',stock:''},{name:'Milenio suave',stock:''},{name:'Milenio mint',stock:''},{name:'Milenio click',stock:''},
     {name:'Milenio uva',stock:''},{name:'Milenio sandía',stock:''},
     {name:'Kiel box',stock:''},{name:'Kiel ks',stock:''},
-    {name:'Dolchester',stock:''},{name:'Dolchester silver',stock:''},{name:'Master',stock:''},{name:'Mill',stock:''},{name:'Bold',stock:''},{name:'Mill convertible',stock:''},
+    {name:'Dolchester',stock:''},{name:'Dolchester silver',stock:''},{name:'Dolchester Negro',stock:''},{name:'Master',stock:''},{name:'Mill',stock:''},{name:'Bold',stock:''},{name:'Mill convertible',stock:''},
+    {name:'Rex',stock:''},
   ]};
 }
 function orenseProvider(){
@@ -653,6 +654,12 @@ async function load(){
     if(!orense.withExpiry){ orense.withExpiry=true; migrated=true; }
     const bocaditos=orense.items.find(it=>it.name==='Bocaditos'||it.name==='Bocaditus');
     if(bocaditos && bocaditos.name!=='Bocadictus'){ bocaditos.name='Bocadictus'; migrated=true; }
+  }
+  let cigeco=data.providers.find(p=>p.id==='p_cigeco');
+  if(cigeco){ // suma productos nuevos a la lista ya existente, sin tocar el stock ya cargado
+    ['Dolchester Negro','Rex'].forEach(n=>{
+      if(!cigeco.items.some(it=>it.name===n)){ cigeco.items.push({name:n, stock:''}); migrated=true; }
+    });
   }
   data.providers.forEach(p=>{ // migrar "solo stock" viejo (guardaba números en data.stock) a texto libre en cada item
     if(p.stockOnly){
