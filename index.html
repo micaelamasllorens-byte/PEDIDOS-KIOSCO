@@ -512,6 +512,8 @@ function electronicaProvider(){
     {name:'Cable iPhone-tipo c',stock:'0',category:'Cables y cargadores'},
     {name:'Cargador de auto KOSMO 2usb 4.2 12V',stock:'8',category:'Cables y cargadores'},
     {name:'Cargador de auto KOSMO 3usb 12V 3.3',stock:'9',category:'Cables y cargadores'},
+    {name:'Alargues',stock:'',category:'Cables y cargadores'},
+    {name:'Adaptadores',stock:'',category:'Cables y cargadores'},
     {name:'Batidor de café',stock:'5',category:'Otros electrónicos'},
     {name:'Balanzas de bolsillo',stock:'5',category:'Otros electrónicos'},
     {name:'Adaptador internacional',stock:'7',category:'Otros electrónicos'},
@@ -521,6 +523,8 @@ function electronicaProvider(){
     {name:'Calculadoras científicas',stock:'10',category:'Otros electrónicos'},
     {name:'Linternas',stock:'23',category:'Otros electrónicos'},
     {name:'Flameadores candela',stock:'',category:'Otros electrónicos'},
+    {name:'Balanza de cocina',stock:'',category:'Otros electrónicos'},
+    {name:'Balanza colgante',stock:'',category:'Otros electrónicos'},
   ];
   return { id:'p_electronica', name:'Electrónica', stockOnly:true, stockDate:'2026-10-12', items };
 }
@@ -713,6 +717,20 @@ async function load(){
     });
   }
   if(!data.providers.some(p=>p.id==='p_bebidas')){ data.providers.push(bebidasProvider()); migrated=true; }
+  let electronica=data.providers.find(p=>p.id==='p_electronica');
+  if(electronica){ // suma productos nuevos manteniendo agrupados por categoría, sin tocar el stock ya cargado
+    [
+      {name:'Alargues', category:'Cables y cargadores'},
+      {name:'Adaptadores', category:'Cables y cargadores'},
+      {name:'Balanza de cocina', category:'Otros electrónicos'},
+      {name:'Balanza colgante', category:'Otros electrónicos'},
+    ].forEach(n=>{
+      if(!electronica.items.some(it=>it.name===n.name)){
+        insertInCategory(electronica.items, {name:n.name, stock:'', category:n.category});
+        migrated=true;
+      }
+    });
+  }
   data.providers.forEach(p=>{ // migrar "solo stock" viejo (guardaba números en data.stock) a texto libre en cada item
     if(p.stockOnly){
       const st=data.stock[p.id];
