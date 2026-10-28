@@ -527,6 +527,7 @@ function electronicaProvider(){
     {name:'Flameadores candela',stock:'',category:'Otros electrónicos'},
     {name:'Balanza de cocina',stock:'',category:'Otros electrónicos'},
     {name:'Balanza colgante',stock:'',category:'Otros electrónicos'},
+    {name:'Candado para motos',stock:'',category:'Otros electrónicos'},
   ];
   return { id:'p_electronica', name:'Electrónica', stockOnly:true, stockDate:'2026-10-12', items };
 }
@@ -730,6 +731,7 @@ async function load(){
       {name:'Balanza colgante', category:'Otros electrónicos'},
       {name:'Funda para agua', category:'Fundas'},
       {name:'Funda para correr', category:'Fundas'},
+      {name:'Candado para motos', category:'Otros electrónicos'},
     ].forEach(n=>{
       if(!electronica.items.some(it=>it.name===n.name)){
         insertInCategory(electronica.items, {name:n.name, stock:'', category:n.category});
