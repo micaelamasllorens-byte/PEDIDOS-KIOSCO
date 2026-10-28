@@ -512,8 +512,10 @@ function electronicaProvider(){
     {name:'Cable iPhone-tipo c',stock:'0',category:'Cables y cargadores'},
     {name:'Cargador de auto KOSMO 2usb 4.2 12V',stock:'8',category:'Cables y cargadores'},
     {name:'Cargador de auto KOSMO 3usb 12V 3.3',stock:'9',category:'Cables y cargadores'},
-    {name:'Alargues',stock:'',category:'Cables y cargadores'},
+    {name:'Alargue 5 metros',stock:'',category:'Cables y cargadores'},
     {name:'Adaptadores',stock:'',category:'Cables y cargadores'},
+    {name:'Funda para agua',stock:'',category:'Fundas'},
+    {name:'Funda para correr',stock:'',category:'Fundas'},
     {name:'Batidor de café',stock:'5',category:'Otros electrónicos'},
     {name:'Balanzas de bolsillo',stock:'5',category:'Otros electrónicos'},
     {name:'Adaptador internacional',stock:'7',category:'Otros electrónicos'},
@@ -719,11 +721,15 @@ async function load(){
   if(!data.providers.some(p=>p.id==='p_bebidas')){ data.providers.push(bebidasProvider()); migrated=true; }
   let electronica=data.providers.find(p=>p.id==='p_electronica');
   if(electronica){ // suma productos nuevos manteniendo agrupados por categoría, sin tocar el stock ya cargado
+    const alargue=electronica.items.find(it=>it.name==='Alargues');
+    if(alargue && !electronica.items.some(it=>it.name==='Alargue 5 metros')){ alargue.name='Alargue 5 metros'; migrated=true; }
     [
-      {name:'Alargues', category:'Cables y cargadores'},
+      {name:'Alargue 5 metros', category:'Cables y cargadores'},
       {name:'Adaptadores', category:'Cables y cargadores'},
       {name:'Balanza de cocina', category:'Otros electrónicos'},
       {name:'Balanza colgante', category:'Otros electrónicos'},
+      {name:'Funda para agua', category:'Fundas'},
+      {name:'Funda para correr', category:'Fundas'},
     ].forEach(n=>{
       if(!electronica.items.some(it=>it.name===n.name)){
         insertInCategory(electronica.items, {name:n.name, stock:'', category:n.category});
