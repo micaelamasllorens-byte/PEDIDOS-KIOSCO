@@ -537,6 +537,7 @@ function alcoholProvider(){
     {name:'Smirnoff Clásico',stock:'8',category:'Vodka y gin'},
     {name:'Smirnoff Raspberry',stock:'4',category:'Vodka y gin'},
     {name:'Gin Merle',stock:'4',category:'Vodka y gin'},
+    {name:'Lata Smirnoff Raspberry',stock:'',category:'Vodka y gin'},
     {name:'Quilmes 473ml',stock:'86',category:'Cervezas'},
     {name:'Heineken 473ml',stock:'59',category:'Cervezas'},
     {name:'Schneider 473ml',stock:'72',category:'Cervezas'},
@@ -548,8 +549,38 @@ function alcoholProvider(){
     {name:'Stella Artois 473ml',stock:'17',category:'Cervezas'},
     {name:'Schneider 710ml',stock:'28',category:'Cervezas'},
     {name:'Heineken 710ml',stock:'23',category:'Cervezas'},
+    {name:'Andes Roja 473ml',stock:'',category:'Cervezas'},
+    {name:'Imperial Golden 710ml',stock:'',category:'Cervezas'},
+    {name:'Brahma 710ml',stock:'',category:'Cervezas'},
   ];
   return { id:'p_alcohol', name:'Alcohol', stockOnly:true, stockDate:'2026-10-12', items };
+}
+function bebidasProvider(){
+  const items=[
+    {name:'Manaos Cola',category:'Manaos'},{name:'Manaos Lima',category:'Manaos'},
+    {name:'Manaos Pomelo',category:'Manaos'},{name:'Manaos Naranja',category:'Manaos'},
+    {name:'Manaos Manzana',category:'Manaos'},{name:'Manaos Cola sin azúcar',category:'Manaos'},
+    {name:'Cunnington Lima',category:'Cunnington'},{name:'Cunnington Cola',category:'Cunnington'},
+    {name:'Cunnington Cola Light',category:'Cunnington'},{name:'Cunnington Tónica',category:'Cunnington'},
+    {name:'Cunnington Pomelo',category:'Cunnington'},{name:'Cunnington Pomelo Light',category:'Cunnington'},
+    {name:'Agua Villamanaos 2lt',category:'Agua Villamanaos'},
+    {name:'Agua Villamanaos 600ml',category:'Agua Villamanaos'},
+    {name:'Placer 1.5lt Naranja',category:'Placer 1,5lt'},{name:'Placer 1.5lt Manzana',category:'Placer 1,5lt'},
+    {name:'Placer 1.5lt Pomelo',category:'Placer 1,5lt'},{name:'Placer 1.5lt Pera',category:'Placer 1,5lt'},
+    {name:'Placer 500ml Naranja',category:'Placer 500ml'},{name:'Placer 500ml Manzana',category:'Placer 500ml'},
+    {name:'Placer 500ml Pomelo',category:'Placer 500ml'},{name:'Placer 500ml Pera',category:'Placer 500ml'},
+    {name:'Baggio 1,5lt Naranja',category:'Baggio 1,5lt'},{name:'Baggio 1,5lt Multifruta',category:'Baggio 1,5lt'},
+    {name:'Baggio 1lt Naranja',category:'Baggio 1lt'},{name:'Baggio 1lt Multifruta',category:'Baggio 1lt'},
+    {name:'Baggio 1lt Manzana',category:'Baggio 1lt'},
+    {name:'Monster Clásico',category:'Monster'},{name:'Monster Zero',category:'Monster'},
+    {name:'Monster Rossi',category:'Monster'},{name:'Monster Pipeline Punch',category:'Monster'},
+    {name:'Monster Mango Loco',category:'Monster'},{name:'Monster Peachy Keen',category:'Monster'},
+    {name:'Monster White Pineapple',category:'Monster'},{name:'Monster Ultra',category:'Monster'},
+    {name:'Monster Watermelon',category:'Monster'},{name:'Monster Strawberry Dreams',category:'Monster'},
+    {name:'Speed Zero 473ml',category:'Energizantes'},{name:'Speed 473ml',category:'Energizantes'},
+    {name:'Speed 250cc',category:'Energizantes'},{name:'Red Bull 250cc',category:'Energizantes'},
+  ].map(it=>({...it,stock:''}));
+  return { id:'p_bebidas', name:'Bebidas', stockOnly:true, items };
 }
 const DANY_VARIANTS=[{key:'L',label:'Lunes'},{key:'M',label:'Miércoles'},{key:'V',label:'Viernes'}];
 function danyDefaultVariant(){
@@ -601,6 +632,12 @@ function casaDanyProvider(){
     {name:'Zyn Spearmint 3 mg', idealByVariant:{L:3,M:3,V:3}},
     {name:'Zyn Spearmint 6 mg', idealByVariant:{L:3,M:3,V:3}},
   ]};
+}
+
+function insertInCategory(items, newItem){ // inserta después del último ítem de la misma categoría (o al final si no existe)
+  let lastIdx=-1;
+  items.forEach((it,i)=>{ if(it.category===newItem.category) lastIdx=i; });
+  if(lastIdx>=0) items.splice(lastIdx+1,0,newItem); else items.push(newItem);
 }
 
 /* ---------- Supabase (via REST) ---------- */
@@ -661,6 +698,21 @@ async function load(){
       if(!cigeco.items.some(it=>it.name===n)){ cigeco.items.push({name:n, stock:''}); migrated=true; }
     });
   }
+  let alcohol=data.providers.find(p=>p.id==='p_alcohol');
+  if(alcohol){ // suma productos nuevos manteniendo agrupados por categoría, sin tocar el stock ya cargado
+    [
+      {name:'Lata Smirnoff Raspberry', category:'Vodka y gin'},
+      {name:'Andes Roja 473ml', category:'Cervezas'},
+      {name:'Imperial Golden 710ml', category:'Cervezas'},
+      {name:'Brahma 710ml', category:'Cervezas'},
+    ].forEach(n=>{
+      if(!alcohol.items.some(it=>it.name===n.name)){
+        insertInCategory(alcohol.items, {name:n.name, stock:'', category:n.category});
+        migrated=true;
+      }
+    });
+  }
+  if(!data.providers.some(p=>p.id==='p_bebidas')){ data.providers.push(bebidasProvider()); migrated=true; }
   data.providers.forEach(p=>{ // migrar "solo stock" viejo (guardaba números en data.stock) a texto libre en cada item
     if(p.stockOnly){
       const st=data.stock[p.id];
