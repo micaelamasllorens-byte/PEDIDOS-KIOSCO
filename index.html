@@ -379,7 +379,7 @@ function cigEconomicosProvider(){
     {name:'Golden mentolado box',stock:''},{name:'Golden click one',stock:''},
     {name:'Melbourne común',stock:''},{name:'Melbourne suave',stock:''},{name:'Melbourne mentolado',stock:''},{name:'Melbourne click',stock:''},
     {name:'Red point KS',stock:''},{name:'Red Point 10',stock:''},{name:'Red Point box',stock:''},{name:'Red point click one',stock:''},
-    {name:'Red point click 10',stock:''},{name:'Red point SIX ON',stock:''},{name:'Red point ECO',stock:''},
+    {name:'Red point click 10',stock:''},{name:'Red point SIX ON',stock:''},{name:'Red point ECO',stock:''},{name:'Red point frutal',stock:''},
     {name:'Milenio red',stock:''},{name:'Milenio suave',stock:''},{name:'Milenio mint',stock:''},{name:'Milenio click',stock:''},
     {name:'Milenio uva',stock:''},{name:'Milenio sandía',stock:''},
     {name:'Kiel box',stock:''},{name:'Kiel ks',stock:''},
@@ -704,6 +704,13 @@ async function load(){
     ['Dolchester Negro','Rex'].forEach(n=>{
       if(!cigeco.items.some(it=>it.name===n)){ cigeco.items.push({name:n, stock:''}); migrated=true; }
     });
+    if(!cigeco.items.some(it=>it.name==='Red point frutal')){
+      let lastIdx=-1;
+      cigeco.items.forEach((it,i)=>{ if(/^red point/i.test(it.name)) lastIdx=i; });
+      const nuevo={name:'Red point frutal', stock:''};
+      if(lastIdx>=0) cigeco.items.splice(lastIdx+1,0,nuevo); else cigeco.items.push(nuevo);
+      migrated=true;
+    }
   }
   let alcohol=data.providers.find(p=>p.id==='p_alcohol');
   if(alcohol){ // suma productos nuevos manteniendo agrupados por categoría, sin tocar el stock ya cargado
