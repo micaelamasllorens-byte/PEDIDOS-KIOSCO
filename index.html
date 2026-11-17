@@ -745,6 +745,30 @@ async function load(){
         migrated=true;
       }
     });
+    // productos de la guía de electrónica (nov 2026): se agregan una sola vez; si después se borran desde "Editar lista", no vuelven
+    if(!electronica.agregados) electronica.agregados=[];
+    [
+      {name:'Cargador Kosmo 2.75 Lightning', category:'Cables y cargadores'},
+      {name:'Cargador Mobile 25W USB-C', category:'Cables y cargadores'},
+      {name:'Cable Legatus 5A USB-tipo C', category:'Cables y cargadores'},
+      {name:'Cargador PRO21 tipo C + USB 3.1A', category:'Cables y cargadores'},
+      {name:'Cargador portátil LAMBO TECH 25.000 mAh', category:'Cables y cargadores'},
+      {name:'Memoria Kingston 32 GB', category:'Otros electrónicos'},
+      {name:'Memoria Kingston 128 GB', category:'Otros electrónicos'},
+      {name:'Afeitadora ORYX 3 en 1', category:'Otros electrónicos'},
+      {name:'Masajeador muscular LEGATUS', category:'Otros electrónicos'},
+      {name:'Ventilador de mesa LAMBO TECH', category:'Otros electrónicos'},
+      {name:'Lámpara LED recargable N-LIGHT', category:'Otros electrónicos'},
+      {name:'Termómetro digital a distancia', category:'Otros electrónicos'},
+      {name:'Zapatilla eléctrica', category:'Otros electrónicos'},
+      {name:'Balanza para viajero', category:'Otros electrónicos'},
+      {name:'Termo autocebante KANSON', category:'Otros electrónicos'},
+      {name:'Funda impermeable con correa', category:'Fundas'},
+    ].forEach(n=>{
+      if(electronica.agregados.includes(n.name)) return;
+      if(!electronica.items.some(it=>it.name===n.name)) insertInCategory(electronica.items, {name:n.name, stock:'', category:n.category});
+      electronica.agregados.push(n.name); migrated=true;
+    });
   }
   data.providers.forEach(p=>{ // migrar "solo stock" viejo (guardaba números en data.stock) a texto libre en cada item
     if(p.stockOnly){
