@@ -761,12 +761,15 @@ async function load(){
     });
     // productos de la guía de electrónica (nov 2026): se agregan una sola vez; si después se borran desde "Editar lista", no vuelven
     if(!electronica.agregados) electronica.agregados=[];
+    if(!electronica.agregados.includes('-Cabezal USB-C 20W')){ // se cargó por error: se saca una sola vez
+      electronica.items=electronica.items.filter(it=>it.name!=='Cabezal USB-C 20W');
+      electronica.agregados.push('-Cabezal USB-C 20W'); migrated=true;
+    }
     [
       {name:'Cargador Kosmo 2.75 Lightning', category:'Cables y cargadores'},
       {name:'Cargador Mobile 25W USB-C', category:'Cables y cargadores'},
       {name:'Cable Legatus 5A USB-tipo C', category:'Cables y cargadores'},
       {name:'Cargador PRO21 tipo C + USB 3.1A', category:'Cables y cargadores'},
-      {name:'Cabezal USB-C 20W', category:'Cables y cargadores'},
       {name:'Cargador portátil LAMBO TECH 25.000 mAh', category:'Cables y cargadores'},
       {name:'Memoria Kingston 32 GB', category:'Otros electrónicos'},
       {name:'Memoria Kingston 128 GB', category:'Otros electrónicos'},
