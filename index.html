@@ -531,6 +531,15 @@ function electronicaProvider(){
   ];
   return { id:'p_electronica', name:'Electrónica', stockOnly:true, stockDate:'2026-10-12', items };
 }
+function bazarProvider(){
+  const items=[
+    ['Rallador de mano','Bazar y hogar'],['Pelapapas LOEKEMEYER','Bazar y hogar'],['Filtro para bombilla x 2','Bazar y hogar'],
+    ['Bombilla de acero ARGEN','Bazar y hogar'],['Tabla de acero para cortar','Bazar y hogar'],['Escarbadientes','Bazar y hogar'],
+    ['Petaca de acero','Bazar y hogar'],['Luces navideñas LED cálidas','Bazar y hogar'],['Luces navideñas LED multicolor','Bazar y hogar'],
+    ['Perfilador de cejas x 3','Perfumería'],['Cortaúñas / alicate grande','Perfumería'],['Cortaúñas / alicate chico','Perfumería'],
+  ].map(([name,category])=>({name,stock:'',category}));
+  return { id:'p_bazar', name:'Bazar y perfumería', stockOnly:true, items };
+}
 function alcoholProvider(){
   const items=[
     {name:'Gancia Clásico',stock:'10',category:'Aperitivos'},
@@ -726,6 +735,11 @@ async function load(){
       }
     });
   }
+  if(!data.provsAgregados) data.provsAgregados=[];
+  if(!data.provsAgregados.includes('p_bazar')){ // se crea una sola vez; si se borra la lista, no vuelve
+    if(!data.providers.some(p=>p.id==='p_bazar')) data.providers.push(bazarProvider());
+    data.provsAgregados.push('p_bazar'); migrated=true;
+  }
   if(!data.providers.some(p=>p.id==='p_bebidas')){ data.providers.push(bebidasProvider()); migrated=true; }
   let electronica=data.providers.find(p=>p.id==='p_electronica');
   if(electronica){ // suma productos nuevos manteniendo agrupados por categoría, sin tocar el stock ya cargado
@@ -752,6 +766,7 @@ async function load(){
       {name:'Cargador Mobile 25W USB-C', category:'Cables y cargadores'},
       {name:'Cable Legatus 5A USB-tipo C', category:'Cables y cargadores'},
       {name:'Cargador PRO21 tipo C + USB 3.1A', category:'Cables y cargadores'},
+      {name:'Cabezal USB-C 20W', category:'Cables y cargadores'},
       {name:'Cargador portátil LAMBO TECH 25.000 mAh', category:'Cables y cargadores'},
       {name:'Memoria Kingston 32 GB', category:'Otros electrónicos'},
       {name:'Memoria Kingston 128 GB', category:'Otros electrónicos'},
